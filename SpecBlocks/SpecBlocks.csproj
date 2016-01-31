@@ -66,7 +66,7 @@
     <Compile Include="SpecService\Logger.cs" />
     <Compile Include="SpecService\SpecGroup.cs" />
     <Compile Include="SpecService\SpecItem.cs" />
-    <Compile Include="SpecService\SpecOptions.cs" />
+    <Compile Include="SpecService\Options\SpecOptions.cs" />
     <Compile Include="SpecService\SpecTable.cs" />
     <Compile Include="SpecService\SpecRecord.cs" />
     <Compile Include="SpecService\SelectBlocks.cs" />

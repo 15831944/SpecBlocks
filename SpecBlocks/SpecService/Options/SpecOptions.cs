@@ -23,8 +23,12 @@ namespace SpecBlocks.Options
       /// <summary>
       /// Имя блока должно соответствовать этому регулярному выражения Regex.IsMatch(blockName, thisPattern, ignoreCase);
       /// </summary>
-      public string BlockNameMatch { get; set; }
-   }
+      public string BlockNameMatch { get; set; }      
+      /// <summary>
+      /// Тип блока - свойство блока и его значение - по которому определяется тип блока.
+      /// </summary>
+      public ItemProp Type { get; set; }
+   }   
 
    /// <summary>
    /// Свойство элемента блока и правила определения

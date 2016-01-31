@@ -3,8 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using AcadLib.Errors;
+using Autodesk.AutoCAD.ApplicationServices;
 using Autodesk.AutoCAD.DatabaseServices;
 using Autodesk.AutoCAD.Runtime;
+using Autodesk.AutoCAD.Windows;
 using SpecBlocks.Options;
 
 [assembly: CommandClass(typeof(TestSpecBlocks.TestCommands))]
@@ -16,9 +19,36 @@ namespace TestSpecBlocks
       [CommandMethod("TestCreateTable")]
       public void TestCreateTable()
       {
-         var specOpt = getTestSpecOptions();         
-         var specTable = new SpecBlocks.SpecTable(specOpt);         
-         specTable.CreateTable();         
+         try
+         {
+            Inspector.Clear();
+            var specOpt = getTestSpecOptions();
+            var specTable = new SpecBlocks.SpecTable(specOpt);
+            specTable.CreateTable();
+         }
+         catch (System.Exception ex)
+         {
+            Application.ShowAlertDialog(ex.Message);
+         }
+         TrayItemBubbleWindow bubble = new TrayItemBubbleWindow();
+         bubble.IconType = IconType.Warning;
+         bubble.Text = "BubleText";
+         bubble.Text2 = "BubleText2";
+         bubble.Title = "BubleTitle";
+
+         TrayItem itemTray = new TrayItem();
+         itemTray.Icon = System.Drawing.SystemIcons.Warning;
+         itemTray.ToolTipText = "ToolTipText";
+
+         itemTray.ShowBubbleWindow(bubble);
+
+         Application.StatusBar.TrayItems.Add(itemTray);
+         Application.StatusBar.Update();
+
+         if (Inspector.HasErrors)
+         {
+            Inspector.Show();
+         }
       }
 
       private SpecOptions getTestSpecOptions()
@@ -36,6 +66,8 @@ namespace TestSpecBlocks
          {
             "ТИП", "МАРКА", "НАИМЕНОВАНИЕ"
          };
+         // Тип блока - атрибут ТИП = Монолит
+         specMonolOpt.BlocksFilter.Type = new ItemProp() { BlockPropName = "ТИП", Name = "Монолит", BlockPropType = EnumBlockProperty.Attribute };
 
          specMonolOpt.GroupPropName = "ГРУППА";
          specMonolOpt.KeyPropName = "МАРКА";

@@ -50,7 +50,7 @@ namespace SpecBlocks
          }
          else
          {
-            specTable.Doc.Editor.WriteMessage($"\nОпределено блоков монолитных конструкций: {items.Count}\n");
+            specTable.Doc.Editor.WriteMessage($"\nОтобрано блоков для спецификации: {items.Count}\n");
          }
          return items;
       }
@@ -93,27 +93,57 @@ namespace SpecBlocks
       {
          if (IdBlRef.IsNull)
          {
+            Logger.Log.Error($"Ошибка в методе SpecItem.Define() - IdBlRef.IsNull. Недопустимая ситуация.");
+            return false;
+         }
+         var blRef = IdBlRef.GetObject(OpenMode.ForRead, false, true) as BlockReference;
+         if (blRef == null)
+         {
+            Logger.Log.Error($"Ошибка в методе SpecItem.Define() - blRef == null. Недопустимая ситуация.");
             return false;
          }
 
-         bool resVal = false;
-         var blRef = IdBlRef.GetObject(OpenMode.ForRead, false, true) as BlockReference;
-         if (blRef != null && blRef.AttributeCollection != null)
+         string err = string.Empty;
+         BlName = blRef.GetEffectiveName();
+
+         if (blRef.AttributeCollection == null)
          {
-            BlName = blRef.GetEffectiveName();
+            // В блоке нет атрибутов.            
+            err += "Нет атрибутов. ";
+         }
+         else
+         {            
             if (Regex.IsMatch(BlName, specTable.SpecOptions.BlocksFilter.BlockNameMatch, RegexOptions.IgnoreCase))
             {
-               // Проверка обязательных атрибутов
+               // все атрибуты блока
                AttrsDict = blRef.GetAttributeDictionary();
-               resVal = true;
+
+               // Проверка типа блока
+               var typeBlock = specTable.SpecOptions.BlocksFilter.Type;
+               if (typeBlock != null)
+               {
+                  DBText atrType;
+                  if (AttrsDict.TryGetValue(typeBlock.BlockPropName, out atrType))
+                  {
+                     if (!typeBlock.Name.Equals(atrType.TextString, StringComparison.OrdinalIgnoreCase))
+                     {
+                        // Свойство типа не соответствует требованию  
+                        err += $"Свойство '{typeBlock.BlockPropName}'='{atrType.TextString}' не соответствует требуемому значению '{typeBlock.Name}'. ";                      
+                     }
+                  }
+                  // В блоке нет свойства Типа
+                  else
+                  {
+                     err += $"Нет обязательного свойства {typeBlock.BlockPropName}. ";
+                  }
+               }
+
+               // Проверка обязательных атрибутов                              
                foreach (var atrMustHave in specTable.SpecOptions.BlocksFilter.AttrsMustHave)
                {
                   if (!AttrsDict.ContainsKey(atrMustHave))
-                  {
-                     resVal = false;
-                     string atrsMustHave = string.Join(", ", 
-                        specTable.SpecOptions.BlocksFilter.AttrsMustHave.Select(a=> $"'{a}'"));
-                     Inspector.AddError($"Блок '{BlName}' пропущен, т.к. в нем нет обязательных атрибутов: {atrsMustHave}", blRef);
+                  {                     
+                     err += $"Нет обязательного свойства: '{atrMustHave}'. ";                     
                   }
                }
 
@@ -132,27 +162,25 @@ namespace SpecBlocks
                }
                else
                {
-                  Inspector.AddError($"Блок '{BlName}' пропущен, т.к. в нем нет ключевого атрибута: '{specTable.SpecOptions.KeyPropName}'", blRef);
-                  resVal = false;
+                  err += $"Не определено ключевое свойство '{specTable.SpecOptions.KeyPropName}'. ";                  
                }
             }
+            // Имя блока не соответствует Regex.IsMatch
             else
             {
-               Inspector.AddError($"Блок '{BlName}' пропущен - имя не соответствует '{specTable.SpecOptions.BlocksFilter.BlockNameMatch}'", blRef);
-            }
+               err += $"Имя блока не соответствует '{specTable.SpecOptions.BlocksFilter.BlockNameMatch}'. ";               
+            }            
+         }
+
+         if (string.IsNullOrEmpty(err))
+         {
+            return true;
          }
          else
          {
-            if (blRef == null)
-            {
-               Logger.Log.Error($"{nameof(SpecItem)}.{nameof(Define)} - blRef == null");
-            }
-            else
-            {
-               Inspector.AddError($"Блок '{blRef.GetEffectiveName()}' пропущен - нет атрибутов.", blRef);
-            }
+            Inspector.AddError($"Пропущен блок '{BlName}': {err}", blRef);
+            return false;
          }
-         return resVal;
       }
    }
 }

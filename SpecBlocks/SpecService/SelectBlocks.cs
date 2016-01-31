@@ -15,8 +15,8 @@ namespace SpecBlocks
          // запрос выбора пользователю
          Document doc = Application.DocumentManager.MdiActiveDocument;
          Editor ed = doc.Editor;
-         IdsBlRefSelected = ed.SelectBlRefs("Выбор блоков для расчета спецификации.");
-         ed.WriteMessage("\nВыбрано {0} блоков", IdsBlRefSelected.Count);
+         IdsBlRefSelected = ed.SelectBlRefs("Выбор блоков для спецификации.");
+         ed.WriteMessage($"\nВыбрано блоков: {IdsBlRefSelected.Count}");
       }
    }
 }
