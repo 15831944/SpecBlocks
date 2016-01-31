@@ -35,6 +35,7 @@
     <AssemblyVersionSettings>None.None.DayOfYearStamp.Increment</AssemblyVersionSettings>
     <AssemblyFileVersionSettings>None.None.DayOfYearStamp.Increment</AssemblyFileVersionSettings>
     <AssemblyInfoVersionSettings>None.None.DayOfYearStamp.Increment</AssemblyInfoVersionSettings>
+    <DocumentationFile>bin\Release\SpecBlocks.XML</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="AcadLib">
