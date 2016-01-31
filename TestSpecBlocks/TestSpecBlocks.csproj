@@ -84,6 +84,7 @@
     <Compile Include="TestCommands.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="AutoCADNetLoad.scr" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
