@@ -6,7 +6,7 @@ namespace SpecBlocks
    /// <summary>
    /// Обна строка в таблице - элементы с одним ключом
    /// </summary>
-   public class SpecRecord
+   internal class SpecRecord
    {
       public List<ColumnValue> ColumnsValue { get; private set; } = new List<ColumnValue>();
       public int Count { get; set; }

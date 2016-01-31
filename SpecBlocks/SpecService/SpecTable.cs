@@ -12,17 +12,21 @@ namespace SpecBlocks
 {
    public class SpecTable
    {
-      public Document Doc { get; private set; } = Application.DocumentManager.MdiActiveDocument;
-      public List<SpecGroup> Groups { get; private set; } = new List<SpecGroup>();
-      public List<SpecItem> Items { get; private set; } = new List<SpecItem>();
-      public SelectBlocks SelBlocks { get; private set; } = new SelectBlocks();
-      public SpecOptions SpecOptions { get; private set; }
+      internal Document Doc { get; private set; } = Application.DocumentManager.MdiActiveDocument;
+      internal List<SpecGroup> Groups { get; private set; } = new List<SpecGroup>();
+      internal List<SpecItem> Items { get; private set; } = new List<SpecItem>();
+      internal SelectBlocks SelBlocks { get; private set; } = new SelectBlocks();
+      internal SpecOptions SpecOptions { get; private set; }
 
       public SpecTable(SpecOptions options)
       {
          SpecOptions = options;
       }
 
+      /// <summary>
+      /// Создание таблицы спецификации блоков, с запросом выбора блоков у пользователя.
+      /// Таблица будет вставлена в указанное место пользователем в текущем пространстве.
+      /// </summary>
       public void CreateTable()
       {
          // Выбор блоков
@@ -57,6 +61,10 @@ namespace SpecBlocks
          Table table = new Table();
          table.SetDatabaseDefaults(Doc.Database);
          table.TableStyle = Doc.Database.GetTableStylePIK(); // если нет стиля ПИк в этом чертеже, то он скопируетс из шаблона, если он найдется
+         if (!string.IsNullOrEmpty(SpecOptions.TableOptions.Layer))
+         {
+            table.LayerId = AcadLib.Layers.LayerExt.GetLayerOrCreateNew(new AcadLib.Layers.LayerInfo(SpecOptions.TableOptions.Layer));
+         }         
 
          int rows = 2 + Groups.Count + Groups.Sum(g => g.Records.Count);
          table.SetSize(rows, SpecOptions.TableOptions.Columns.Count);

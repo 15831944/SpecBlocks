@@ -10,7 +10,7 @@ namespace SpecBlocks
    /// <summary>
    /// Элемент спецификации
    /// </summary>
-   public class SpecItem
+   internal class SpecItem
    {
       public Dictionary<string, DBText> AttrsDict { get; private set; }
       public string BlName { get; private set; }
