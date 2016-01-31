@@ -7,8 +7,7 @@ namespace SpecBlocks
    /// </summary>
    public class ColumnValue
    {
-      public TableColumn ColumnSpec { get; private set; }      
-
+      public TableColumn ColumnSpec { get; private set; }
       public string Value { get; set; }
 
       public ColumnValue(TableColumn column)

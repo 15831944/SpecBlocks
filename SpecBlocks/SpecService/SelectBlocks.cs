@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 using Autodesk.AutoCAD.ApplicationServices;
 using Autodesk.AutoCAD.DatabaseServices;
 using Autodesk.AutoCAD.EditorInput;
@@ -16,11 +12,11 @@ namespace SpecBlocks
 
       public void Select()
       {
-         // запрос выбора пользователю 
+         // запрос выбора пользователю
          Document doc = Application.DocumentManager.MdiActiveDocument;
          Editor ed = doc.Editor;
          IdsBlRefSelected = ed.SelectBlRefs("Выбор блоков для расчета спецификации.");
-         ed.WriteMessage("\nВыбрано {0} блоков", IdsBlRefSelected.Count);         
+         ed.WriteMessage("\nВыбрано {0} блоков", IdsBlRefSelected.Count);
       }
    }
 }

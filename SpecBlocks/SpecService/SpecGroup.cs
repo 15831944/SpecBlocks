@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using AcadLib.Errors;
 
 namespace SpecBlocks
 {
@@ -20,7 +16,7 @@ namespace SpecBlocks
 
       public SpecGroup(string name)
       {
-         Name = name;         
+         Name = name;
       }
 
       public static List<SpecGroup> Grouping(SpecTable specTable)
@@ -42,7 +38,7 @@ namespace SpecBlocks
       {
          // itemGroup - элементы одной группы.
          // Нужно сгруппировать по ключевому свойству
-         var uniqRecs = itemGroup.GroupBy(m => m.Key).OrderBy(m=>m.Key);
+         var uniqRecs = itemGroup.GroupBy(m => m.Key).OrderBy(m => m.Key);
          foreach (var urec in uniqRecs)
          {
             SpecRecord rec = new SpecRecord(urec.Key, urec.ToList(), specTable);

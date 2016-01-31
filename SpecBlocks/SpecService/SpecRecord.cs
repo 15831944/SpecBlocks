@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using AcadLib.Errors;
 
 namespace SpecBlocks
 {
@@ -12,14 +8,14 @@ namespace SpecBlocks
    /// </summary>
    public class SpecRecord
    {
-      public string Key { get; set; }      
-      public int Count { get; set; }      
-      public List<SpecItem> Items { get; set; }
       public List<ColumnValue> ColumnsValue { get; private set; } = new List<ColumnValue>();
-      
-      public SpecRecord (string key, List<SpecItem> items, SpecTable specTable)
+      public int Count { get; set; }
+      public List<SpecItem> Items { get; set; }
+      public string Key { get; set; }
+
+      public SpecRecord(string key, List<SpecItem> items, SpecTable specTable)
       {
-         Key = key;         
+         Key = key;
          Items = items ?? new List<SpecItem>();
          Count = Items.Count;
          // Составление строки таблицы
