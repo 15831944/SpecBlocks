@@ -79,7 +79,7 @@ namespace SpecBlocks
             else
             {
                // В элементе вообще нет свойства для этого столбца
-               err += $"Нет определено свойтво '{colVal.ColumnSpec.ItemPropName}'.\n";
+               err += $"Не определено свойство '{colVal.ColumnSpec.ItemPropName}'.\n";
             }
          }
          if (!string.IsNullOrEmpty(err))
