@@ -76,13 +76,10 @@ namespace SpecBlocks.Options
       public TableOptions TableOptions { get; set; }
 
       /// <summary>
-      /// Загрузка настроек таблицы по имени таблицы настроек
-      /// </summary>
-      /// <param name="name"></param>
-      /// <returns></returns>
-      public static SpecOptions Load(string name)
-      {
-         string file = getFileOptions(name);
+      /// Загрузка настроек таблицы из файла
+      /// </summary>            
+      public static SpecOptions Load(string file)
+      {         
          AcadLib.Files.SerializerXml ser = new AcadLib.Files.SerializerXml(file);
          return ser.DeserializeXmlFile<SpecOptions>();
       }
@@ -100,22 +97,16 @@ namespace SpecBlocks.Options
       /// <summary>
       /// Сохранение файла настроек таблицы в XML в корневой папке программы с именем Name
       /// </summary>
-      public void Save()
+      public void Save(string file)
       {
          if (string.IsNullOrEmpty(Name))
          {
             Logger.Log.Error("Попытка сохранить настройки таблицы SpecOptions без имени.");
             return;
-         }
-         string file = getFileOptions(Name);
+         }         
          AcadLib.Files.SerializerXml ser = new AcadLib.Files.SerializerXml(file);
          ser.SerializeList(this);
-      }
-
-      private static string getFileOptions(string name)
-      {
-         return Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), name + ".xml");
-      }
+      }      
    }
 
    public class TableColumn
