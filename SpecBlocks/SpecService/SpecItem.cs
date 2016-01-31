@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using AcadLib.Errors;
@@ -110,8 +111,9 @@ namespace SpecBlocks
                   if (!AttrsDict.ContainsKey(atrMustHave))
                   {
                      resVal = false;
-                     string atrsMustHave = string.Join(", ", specTable.SpecOptions.BlocksFilter.AttrsMustHave);
-                     Inspector.AddError($"Блок {BlName} пропущен, т.к. в нем нет обязательных атрибутов: {atrsMustHave}");
+                     string atrsMustHave = string.Join(", ", 
+                        specTable.SpecOptions.BlocksFilter.AttrsMustHave.Select(a=> $"'{a}'"));
+                     Inspector.AddError($"Блок '{BlName}' пропущен, т.к. в нем нет обязательных атрибутов: {atrsMustHave}", blRef);
                   }
                }
 
@@ -130,9 +132,24 @@ namespace SpecBlocks
                }
                else
                {
-                  Inspector.AddError($"Блок {BlName} пропущен, т.к. в нем нет ключевого атрибута: {specTable.SpecOptions.KeyPropName}");
+                  Inspector.AddError($"Блок '{BlName}' пропущен, т.к. в нем нет ключевого атрибута: '{specTable.SpecOptions.KeyPropName}'", blRef);
                   resVal = false;
                }
+            }
+            else
+            {
+               Inspector.AddError($"Блок '{BlName}' пропущен - имя не соответствует '{specTable.SpecOptions.BlocksFilter.BlockNameMatch}'", blRef);
+            }
+         }
+         else
+         {
+            if (blRef == null)
+            {
+               Logger.Log.Error($"{nameof(SpecItem)}.{nameof(Define)} - blRef == null");
+            }
+            else
+            {
+               Inspector.AddError($"Блок '{blRef.GetEffectiveName()}' пропущен - нет атрибутов.", blRef);
             }
          }
          return resVal;
