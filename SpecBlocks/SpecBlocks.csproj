@@ -70,6 +70,8 @@
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SpecService\ColumnValue.cs" />
+    <Compile Include="SpecService\SpecService.cs" />
+    <Compile Include="SpecService\ISpecCustom.cs" />
     <Compile Include="SpecService\Logger.cs" />
     <Compile Include="SpecService\SpecGroup.cs" />
     <Compile Include="SpecService\SpecItem.cs" />

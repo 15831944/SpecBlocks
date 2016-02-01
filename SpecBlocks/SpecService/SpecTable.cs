@@ -10,7 +10,7 @@ using SpecBlocks.Options;
 
 namespace SpecBlocks
 {
-   public class SpecTable
+   internal class SpecTable
    {
       internal Document Doc { get; private set; } = Application.DocumentManager.MdiActiveDocument;
       internal List<SpecGroup> Groups { get; private set; } = new List<SpecGroup>();
@@ -97,8 +97,26 @@ namespace SpecBlocks
          int row = 2;
          foreach (var group in Groups)
          {
-            table.Cells[row, 2].TextString = "{0}{1}{2}".f("{\\L", group.Name, "}");
-            table.Cells[row, 2].Alignment = CellAlignment.MiddleCenter;
+            string groupName = group.Name;
+            if (string.IsNullOrEmpty(group.Name))
+            {
+               if (Groups.Count == 1)
+               {
+                  // Если кол групп = 1, и она пустая, то удаление строки группы
+                  table.DeleteRows(row, 1);
+                  row--;               
+               }
+               else
+               {
+                  // Если кол групп > 1, и она пустая, то название для пустой группы - Разное
+                  groupName = "Разное";
+               }               
+            }
+            else
+            {
+               table.Cells[row, 2].TextString = "{0}{1}{2}".f("{\\L", groupName, "}");
+               table.Cells[row, 2].Alignment = CellAlignment.MiddleCenter;
+            }            
 
             row++;
             foreach (var rec in group.Records)

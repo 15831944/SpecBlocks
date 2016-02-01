@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using AcadLib.Errors;
@@ -8,6 +10,7 @@ using Autodesk.AutoCAD.ApplicationServices;
 using Autodesk.AutoCAD.DatabaseServices;
 using Autodesk.AutoCAD.Runtime;
 using Autodesk.AutoCAD.Windows;
+using SpecBlocks;
 using SpecBlocks.Options;
 
 [assembly: CommandClass(typeof(TestSpecBlocks.TestCommands))]
@@ -21,10 +24,9 @@ namespace TestSpecBlocks
       {
          try
          {
-            Inspector.Clear();
-            var specOpt = getTestSpecOptions();
-            var specTable = new SpecBlocks.SpecTable(specOpt);
-            specTable.CreateTable();
+            Inspector.Clear();            
+            var specService = new SpecService(new SpecTest());
+            specService.CreateSpec();
          }
          catch (System.Exception ex)
          {
@@ -50,8 +52,19 @@ namespace TestSpecBlocks
             Inspector.Show();
          }
       }
+   }
 
-      private SpecOptions getTestSpecOptions()
+   class SpecTest : ISpecCustom
+   {
+      public string File
+      {
+         get
+         {
+            return Path.Combine(Assembly.GetExecutingAssembly().Location,  "Test.xml");
+         }
+      }
+
+      public SpecOptions GetDefaultOptions()
       {
          SpecOptions specMonolOpt = new SpecOptions();
 
@@ -97,6 +110,6 @@ namespace TestSpecBlocks
          };
 
          return specMonolOpt;
-      }
+      }      
    }
 }
