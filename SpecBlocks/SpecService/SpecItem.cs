@@ -5,6 +5,7 @@ using System.Text.RegularExpressions;
 using AcadLib.Errors;
 using AcadLib.Extensions;
 using Autodesk.AutoCAD.DatabaseServices;
+using System.Drawing;
 
 namespace SpecBlocks
 {
@@ -85,7 +86,7 @@ namespace SpecBlocks
          }
          if (!string.IsNullOrEmpty(err))
          {
-            Inspector.AddError($"Ошибки в блоке {BlName}: {err} Этот блок попадет в спецификацию с эталонными значениями.", IdBlRef);
+            Inspector.AddError($"Ошибки в блоке {BlName}: {err} Этот блок попадет в спецификацию с эталонными значениями.", IdBlRef, icon: SystemIcons.Error);
          }
       }
 
@@ -178,7 +179,7 @@ namespace SpecBlocks
          }
          else
          {
-            Inspector.AddError($"Пропущен блок '{BlName}': {err}", blRef);
+            Inspector.AddError($"Пропущен блок '{BlName}': {err}", blRef, icon: SystemIcons.Information);
             return false;
          }
       }

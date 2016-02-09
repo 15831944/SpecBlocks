@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using AcadLib.Errors;
 using AcadLib.Jigs;
@@ -49,7 +50,7 @@ namespace SpecBlocks
             catch (Exception ex)
             {
                Logger.Log.Error(ex, "SpecTable.CreateTable().");
-               Inspector.AddError(ex.Message);
+               Inspector.AddError(ex.Message, icon: SystemIcons.Error);
             }
 
             t.Commit();
