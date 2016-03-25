@@ -31,27 +31,20 @@ namespace SpecBlocks
         public void CreateTable()
         {
             // Выбор блоков
-            SelBlocks.Select();            
+            SelBlocks.Select();
 
             using (var t = Doc.TransactionManager.StartTransaction())
             {
-                try
-                {
-                    // Фильтрация блоков
-                    Items = SpecItem.FilterSpecItems(this);
-                    // Группировка элементов
-                    Groups = SpecGroup.Grouping(this);
+                // Фильтрация блоков
+                Items = SpecItem.FilterSpecItems(this);
+                if (Items.Count == 0) return;
+                // Группировка элементов
+                Groups = SpecGroup.Grouping(this);
 
-                    // Создание таблицы
-                    Table table = getTable();
-                    // Вставка таблицы
-                    insertTable(table);
-                }
-                catch (Exception ex)
-                {
-                    Logger.Log.Error(ex, "SpecTable.CreateTable().");
-                    Inspector.AddError(ex.Message, icon: SystemIcons.Error);
-                }
+                // Создание таблицы
+                Table table = getTable();
+                // Вставка таблицы
+                insertTable(table);
 
                 t.Commit();
             }

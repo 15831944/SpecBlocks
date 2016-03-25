@@ -31,21 +31,7 @@ namespace TestSpecBlocks
          catch (System.Exception ex)
          {
             Application.ShowAlertDialog(ex.Message);
-         }
-         TrayItemBubbleWindow bubble = new TrayItemBubbleWindow();
-         bubble.IconType = IconType.Warning;
-         bubble.Text = "BubleText";
-         bubble.Text2 = "BubleText2";
-         bubble.Title = "BubleTitle";
-
-         TrayItem itemTray = new TrayItem();
-         itemTray.Icon = System.Drawing.SystemIcons.Warning;
-         itemTray.ToolTipText = "ToolTipText";
-
-         itemTray.ShowBubbleWindow(bubble);
-
-         Application.StatusBar.TrayItems.Add(itemTray);
-         Application.StatusBar.Update();
+         }         
 
          if (Inspector.HasErrors)
          {

@@ -49,11 +49,13 @@ namespace SpecBlocks
 
             if (items.Count == 0)
             {
-                throw new Exception("Не определены блоки монолитных конструкций.");
+                //throw new Exception("Не определены блоки монолитных конструкций.");
+                specTable.Doc.Editor.WriteMessage("\nНе определены блоки монолитных конструкций.");
+                return items;                
             }
             else
             {
-                specTable.Doc.Editor.WriteMessage($"\nОтобрано блоков для спецификации: {items.Count}\n");
+                specTable.Doc.Editor.WriteMessage($"\nОтобрано блоков для спецификации: {items.Count}.");
             }
 
             // Проверка дубликатов
@@ -116,14 +118,14 @@ namespace SpecBlocks
             string err = string.Empty;
             BlName = blRef.GetEffectiveName();
 
-            if (blRef.AttributeCollection == null)
+            if (Regex.IsMatch(BlName, specTable.SpecOptions.BlocksFilter.BlockNameMatch, RegexOptions.IgnoreCase))
             {
-                // В блоке нет атрибутов.            
-                err += "Нет атрибутов. ";
-            }
-            else
-            {
-                if (Regex.IsMatch(BlName, specTable.SpecOptions.BlocksFilter.BlockNameMatch, RegexOptions.IgnoreCase))
+                if (blRef.AttributeCollection == null)
+                {
+                    // В блоке нет атрибутов.            
+                    err += "Нет атрибутов. ";
+                }
+                else
                 {
                     // все атрибуты блока
                     AttrsDict = blRef.GetAttributeDictionary();
@@ -175,22 +177,24 @@ namespace SpecBlocks
                         err += $"Не определено ключевое свойство '{specTable.SpecOptions.KeyPropName}'. ";
                     }
                 }
-                // Имя блока не соответствует Regex.IsMatch
+
+                if (string.IsNullOrEmpty(err))
+                {
+                    Inspector.AddError($"{BlName} = '{Key}'", blRef, icon: SystemIcons.Information);
+                    return true;
+                }
                 else
                 {
-                    err += $"Имя блока не соответствует '{specTable.SpecOptions.BlocksFilter.BlockNameMatch}'. ";
+                    Inspector.AddError($"Пропущен блок '{BlName}': {err}", blRef, icon: SystemIcons.Warning);
+                    return false;
                 }
             }
-
-            if (string.IsNullOrEmpty(err))
-            {
-                return true;
-            }
+            // Имя блока не соответствует Regex.IsMatch
             else
             {
-                Inspector.AddError($"Пропущен блок '{BlName}': {err}", blRef, icon: SystemIcons.Information);
+                //err += $"Имя блока не соответствует '{specTable.SpecOptions.BlocksFilter.BlockNameMatch}'. ";
                 return false;
-            }
+            }            
         }
     }
 }
