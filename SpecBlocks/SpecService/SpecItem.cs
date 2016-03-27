@@ -180,7 +180,8 @@ namespace SpecBlocks
 
                 if (string.IsNullOrEmpty(err))
                 {
-                    Inspector.AddError($"{BlName} = '{Key}'", blRef, icon: SystemIcons.Information);
+                    // Добавлен блок в спецификацию
+                    Inspector.AddError($"{BlName}, '{specTable.SpecOptions.KeyPropName}'='{Key}'", blRef, icon: SystemIcons.Information);
                     return true;
                 }
                 else
