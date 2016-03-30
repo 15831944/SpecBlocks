@@ -54,7 +54,7 @@ namespace SpecBlocks
         {
             Table table = new Table();
             table.SetDatabaseDefaults(Doc.Database);
-            table.TableStyle = Doc.Database.GetTableStylePIK(); // если нет стиля ПИк в этом чертеже, то он скопируетс из шаблона, если он найдется
+            table.TableStyle = Doc.Database.GetTableStylePIK(true); // если нет стиля ПИк в этом чертеже, то он скопируетс из шаблона, если он найдется
             if (!string.IsNullOrEmpty(SpecOptions.TableOptions.Layer))
             {
                 table.LayerId = AcadLib.Layers.LayerExt.GetLayerOrCreateNew(new AcadLib.Layers.LayerInfo(SpecOptions.TableOptions.Layer));
@@ -62,6 +62,7 @@ namespace SpecBlocks
 
             int rows = 2 + Groups.Count + Groups.Sum(g => g.Records.Count);
             table.SetSize(rows, SpecOptions.TableOptions.Columns.Count);
+            table.SetRowHeight(8);
 
             for (int i = 0; i < table.Columns.Count; i++)
             {
@@ -82,9 +83,9 @@ namespace SpecBlocks
             rowTitle.TextHeight = 5;
             rowTitle.TextString = SpecOptions.TableOptions.Title;
 
-            // Строка заголовков столбцов
+            // Строка заголовков столбцов            
             var rowHeaders = table.Rows[1];
-            rowHeaders.Height = 15;
+            rowHeaders.Height = 15;            
             var lwBold = rowHeaders.Borders.Top.LineWeight;
             rowHeaders.Borders.Bottom.LineWeight = lwBold;
 
