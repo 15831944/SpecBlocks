@@ -8,6 +8,7 @@ using Autodesk.AutoCAD.ApplicationServices;
 using Autodesk.AutoCAD.DatabaseServices;
 using Autodesk.AutoCAD.EditorInput;
 using SpecBlocks.Options;
+using AcadLib;
 
 namespace SpecBlocks
 {
@@ -62,6 +63,7 @@ namespace SpecBlocks
 
             int rows = 2 + Groups.Count + Groups.Sum(g => g.Records.Count);
             table.SetSize(rows, SpecOptions.TableOptions.Columns.Count);
+            table.SetBorders(LineWeight.LineWeight050);
             table.SetRowHeight(8);
 
             for (int i = 0; i < table.Columns.Count; i++)
