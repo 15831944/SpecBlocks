@@ -12,7 +12,7 @@ namespace SpecBlocks
     /// <summary>
     /// Элемент спецификации
     /// </summary>
-    internal class SpecItem
+    internal class SpecItem : IEquatable<SpecItem>
     {
         public Dictionary<string, DBText> AttrsDict { get; private set; }
         public string BlName { get; private set; }
@@ -71,7 +71,7 @@ namespace SpecBlocks
         /// Проверка соответствия значениям в столбцах
         /// </summary>
         /// <param name="columnsValue"></param>
-        public void CheckColumnsValur(List<ColumnValue> columnsValue, SpecTable specTable)
+        public void CheckColumnsValue(List<ColumnValue> columnsValue, SpecTable specTable)
         {
             string err = string.Empty;
             foreach (var colVal in columnsValue)
@@ -180,8 +180,8 @@ namespace SpecBlocks
 
                 if (string.IsNullOrEmpty(err))
                 {
-                    // Добавлен блок в спецификацию
-                    Inspector.AddError($"{BlName}, {specTable.SpecOptions.KeyPropName}='{Key}'", blRef, icon: SystemIcons.Information);
+                    //// Добавлен блок в спецификацию
+                    //Inspector.AddError($"{BlName}, {specTable.SpecOptions.KeyPropName}='{Key}'", blRef, icon: SystemIcons.Information);
                     return true;
                 }
                 else
@@ -196,6 +196,22 @@ namespace SpecBlocks
                 //err += $"Имя блока не соответствует '{specTable.SpecOptions.BlocksFilter.BlockNameMatch}'. ";
                 return false;
             }            
+        }
+
+
+        public override int GetHashCode()
+        {
+            return Group.GetHashCode() ^ Key.GetHashCode();
+        }
+
+        public bool Equals(SpecItem other)
+        {
+            if (ReferenceEquals(this, other)) return true;
+
+            return Group.Equals(other.Group) &&
+                   Key.Equals(other.Key) &&
+                   AttrsDict.Count == other.AttrsDict.Count &&
+                   AttrsDict.All(i => other.AttrsDict.ContainsKey(i.Key) && AttrsDict[i.Key].TextString.Equals(other.AttrsDict[i.Key].TextString));
         }
     }
 }

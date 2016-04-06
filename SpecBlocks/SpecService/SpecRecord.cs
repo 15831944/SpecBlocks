@@ -50,7 +50,7 @@ namespace SpecBlocks
          // Отличающиеся элементы вывести в инспектор.
 
          // Все записи должны соответствовать значениям в ColumnsValue
-         Items.ForEach(i => i.CheckColumnsValur(ColumnsValue, specTable));
+         Items.ForEach(i => i.CheckColumnsValue(ColumnsValue, specTable));
       }
    }
 }

@@ -111,7 +111,7 @@ namespace SpecBlocks
                 }
                 else
                 {
-                    table.Cells[row, 2].TextString = "{0}{1}{2}".f("{\\L", groupName, "}");
+                    table.Cells[row, 2].TextString = $"{{\\L{groupName}}}";//.f("{\\L", groupName, "}");
                     table.Cells[row, 2].Alignment = CellAlignment.MiddleCenter;
                 }
 
