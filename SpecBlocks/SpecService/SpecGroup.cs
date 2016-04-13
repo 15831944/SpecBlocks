@@ -47,24 +47,34 @@ namespace SpecBlocks
 
             //var groups = piles.GroupBy(g => new { g.View, g.TopPileAfterBeat, g.TopPileAfterCut, g.BottomGrillage, g.PilePike })
             //                    .OrderBy(g => g.Key.View, AcadLib.Comparers.AlphanumComparator.New);
-
-            int i = 0;
+                        
             foreach (var urec in uniqRecs)
-            {
+            {                
                 SpecRecord rec = new SpecRecord(urec.Key.Key, urec.ToList(), specTable);
                 Records.Add(rec);
 
                 // Добавление элементов определенных групп в инспектор для показа пользователю                
                 foreach (var item in urec)
+                {                    
+                        Inspector.AddError($"{item.BlName} {specTable.SpecOptions.KeyPropName}='{item.Key}'", item.IdBlRef,
+                            icon: System.Drawing.SystemIcons.Information);                                         
+                }                
+            }
+
+            // Дублирование марки
+            var errRecsDublKey = uniqRecs.GroupBy(g => g.Key.Key).Where(w=>w.Skip(1).Any());            
+            foreach (var errRecDublKey in errRecsDublKey)
+            {
+                int i = 0;                
+                foreach (var items in errRecDublKey)
                 {
-                    if (i==0)                    
-                        Inspector.AddError($"{item.BlName}, '{specTable.SpecOptions.KeyPropName}={item.Key}'", item.IdBlRef,
-                            icon: System.Drawing.SystemIcons.Information);
-                    else
-                        Inspector.AddError($"{item.BlName}, '{specTable.SpecOptions.KeyPropName}={item.Key}'-{i}", item.IdBlRef,
-                            icon: System.Drawing.SystemIcons.Warning);                    
-                }
-                i++;
+                    i++;
+                    foreach (var rec in items)
+                    {
+                        Inspector.AddError($"{rec.BlName} {specTable.SpecOptions.KeyPropName}='{rec.Key}'-{i}", rec.IdBlRef,
+                        icon: System.Drawing.SystemIcons.Warning);
+                    }                    
+                }                
             }
         }
 
