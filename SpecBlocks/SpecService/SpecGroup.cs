@@ -71,11 +71,11 @@ namespace SpecBlocks
                     i++;
                     foreach (var rec in items)
                     {
-                        Inspector.AddError($"{rec.BlName} {specTable.SpecOptions.KeyPropName}='{rec.Key}'-{i}", rec.IdBlRef,
+                        Inspector.AddError($"Дублирование марки в блоке {rec.BlName} {specTable.SpecOptions.KeyPropName}='{rec.Key}'-{i}, такая марка уже определена с другими параметрами блока.", rec.IdBlRef,
                         icon: System.Drawing.SystemIcons.Warning);
                     }                    
                 }                
-            }
+            }            
         }
 
         /// <summary>
