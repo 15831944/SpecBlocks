@@ -108,96 +108,101 @@ namespace SpecBlocks
                 Logger.Log.Error($"Ошибка в методе SpecItem.Define() - IdBlRef.IsNull. Недопустимая ситуация.");
                 return false;
             }
-            var blRef = IdBlRef.GetObject(OpenMode.ForRead, false, true) as BlockReference;
-            if (blRef == null)
+            using (var blRef = IdBlRef.GetObject(OpenMode.ForRead, false, true) as BlockReference)
             {
-                Logger.Log.Error($"Ошибка в методе SpecItem.Define() - blRef == null. Недопустимая ситуация.");
-                return false;
-            }
 
-            string err = string.Empty;
-            BlName = blRef.GetEffectiveName();
-
-            if (Regex.IsMatch(BlName, specTable.SpecOptions.BlocksFilter.BlockNameMatch, RegexOptions.IgnoreCase))
-            {
-                if (blRef.AttributeCollection == null)
+                if (blRef == null)
                 {
-                    // В блоке нет атрибутов.            
-                    err += "Нет атрибутов. ";
+                    Logger.Log.Error($"Ошибка в методе SpecItem.Define() - blRef == null. Недопустимая ситуация.");
+                    return false;
                 }
-                else
+
+                string err = string.Empty;
+                BlName = blRef.GetEffectiveName();
+
+                if (Regex.IsMatch(BlName, specTable.SpecOptions.BlocksFilter.BlockNameMatch, RegexOptions.IgnoreCase))
                 {
-                    // все атрибуты блока
-                    AttrsDict = blRef.GetAttributeDictionary();
-
-                    // Проверка типа блока
-                    var typeBlock = specTable.SpecOptions.BlocksFilter.Type;
-                    if (typeBlock != null)
+                    if (blRef.AttributeCollection == null)
                     {
-                        DBText atrType;
-                        if (AttrsDict.TryGetValue(typeBlock.BlockPropName, out atrType))
-                        {
-                            if (!typeBlock.Name.Equals(atrType.TextString, StringComparison.OrdinalIgnoreCase))
-                            {
-                                // Свойство типа не соответствует требованию  
-                                err += $"Свойство '{typeBlock.BlockPropName}'='{atrType.TextString}' не соответствует требуемому значению '{typeBlock.Name}'. ";
-                            }
-                        }
-                        // В блоке нет свойства Типа
-                        else
-                        {
-                            err += $"Нет обязательного свойства {typeBlock.BlockPropName}. ";
-                        }
-                    }
-
-                    // Проверка обязательных атрибутов                              
-                    foreach (var atrMustHave in specTable.SpecOptions.BlocksFilter.AttrsMustHave)
-                    {
-                        if (!AttrsDict.ContainsKey(atrMustHave))
-                        {
-                            err += $"Нет обязательного свойства: '{atrMustHave}'. ";
-                        }
-                    }
-
-                    // определение Группы
-                    DBText groupAttr;
-                    if (AttrsDict.TryGetValue(specTable.SpecOptions.GroupPropName, out groupAttr))
-                    {
-                        Group = groupAttr.TextString;
-                    }
-
-                    // Ключевое свойство
-                    DBText keyAttr;
-                    if (AttrsDict.TryGetValue(specTable.SpecOptions.KeyPropName, out keyAttr))
-                    {
-                        Key = keyAttr.TextString;
+                        // В блоке нет атрибутов.            
+                        err += "Нет атрибутов. ";
                     }
                     else
                     {
-                        err += $"Не определено ключевое свойство '{specTable.SpecOptions.KeyPropName}'. ";
+                        // Регенерация блока                        
+                        // ???
+
+                        // все атрибуты блока
+                        AttrsDict = blRef.GetAttributeDictionary();
+
+                        // Проверка типа блока
+                        var typeBlock = specTable.SpecOptions.BlocksFilter.Type;
+                        if (typeBlock != null)
+                        {
+                            DBText atrType;
+                            if (AttrsDict.TryGetValue(typeBlock.BlockPropName, out atrType))
+                            {
+                                if (!typeBlock.Name.Equals(atrType.TextString, StringComparison.OrdinalIgnoreCase))
+                                {
+                                    // Свойство типа не соответствует требованию  
+                                    err += $"Свойство '{typeBlock.BlockPropName}'='{atrType.TextString}' не соответствует требуемому значению '{typeBlock.Name}'. ";
+                                }
+                            }
+                            // В блоке нет свойства Типа
+                            else
+                            {
+                                err += $"Нет обязательного свойства {typeBlock.BlockPropName}. ";
+                            }
+                        }
+
+                        // Проверка обязательных атрибутов                              
+                        foreach (var atrMustHave in specTable.SpecOptions.BlocksFilter.AttrsMustHave)
+                        {
+                            if (!AttrsDict.ContainsKey(atrMustHave))
+                            {
+                                err += $"Нет обязательного свойства: '{atrMustHave}'. ";
+                            }
+                        }
+
+                        // определение Группы
+                        DBText groupAttr;
+                        if (AttrsDict.TryGetValue(specTable.SpecOptions.GroupPropName, out groupAttr))
+                        {
+                            Group = groupAttr.TextString;
+                        }
+
+                        // Ключевое свойство
+                        DBText keyAttr;
+                        if (AttrsDict.TryGetValue(specTable.SpecOptions.KeyPropName, out keyAttr))
+                        {
+                            Key = keyAttr.TextString;
+                        }
+                        else
+                        {
+                            err += $"Не определено ключевое свойство '{specTable.SpecOptions.KeyPropName}'. ";
+                        }
+                    }
+
+                    if (string.IsNullOrEmpty(err))
+                    {
+                        //// Добавлен блок в спецификацию
+                        //Inspector.AddError($"{BlName}, {specTable.SpecOptions.KeyPropName}='{Key}'", blRef, icon: SystemIcons.Information);
+                        return true;
+                    }
+                    else
+                    {
+                        Inspector.AddError($"Пропущен блок '{BlName}': {err}", blRef, icon: SystemIcons.Warning);
+                        return false;
                     }
                 }
-
-                if (string.IsNullOrEmpty(err))
-                {
-                    //// Добавлен блок в спецификацию
-                    //Inspector.AddError($"{BlName}, {specTable.SpecOptions.KeyPropName}='{Key}'", blRef, icon: SystemIcons.Information);
-                    return true;
-                }
+                // Имя блока не соответствует Regex.IsMatch
                 else
                 {
-                    Inspector.AddError($"Пропущен блок '{BlName}': {err}", blRef, icon: SystemIcons.Warning);
+                    //err += $"Имя блока не соответствует '{specTable.SpecOptions.BlocksFilter.BlockNameMatch}'. ";
                     return false;
                 }
-            }
-            // Имя блока не соответствует Regex.IsMatch
-            else
-            {
-                //err += $"Имя блока не соответствует '{specTable.SpecOptions.BlocksFilter.BlockNameMatch}'. ";
-                return false;
-            }            
+            }         
         }
-
 
         public override int GetHashCode()
         {

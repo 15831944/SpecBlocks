@@ -56,7 +56,7 @@ namespace SpecBlocks
                 // Добавление элементов определенных групп в инспектор для показа пользователю                
                 foreach (var item in urec)
                 {                    
-                        Inspector.AddError($"{item.BlName} {specTable.SpecOptions.KeyPropName}='{item.Key}'", item.IdBlRef,
+                        Inspector.AddError($"{item.BlName} {specTable.SpecOptions.KeyPropName}={item.Key}", item.IdBlRef,
                             icon: System.Drawing.SystemIcons.Information);                                         
                 }                
             }

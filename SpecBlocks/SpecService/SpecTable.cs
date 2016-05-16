@@ -31,6 +31,9 @@ namespace SpecBlocks
         /// </summary>
         public void CreateTable()
         {
+            // Регенерация - для обновления полей
+            Doc.Database.EvaluateFields();
+
             // Выбор блоков
             SelBlocks.Select();
 
