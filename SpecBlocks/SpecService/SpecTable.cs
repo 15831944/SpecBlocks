@@ -12,7 +12,7 @@ using AcadLib;
 
 namespace SpecBlocks
 {
-    internal class SpecTable
+    class SpecTable
     {
         internal Document Doc { get; private set; } = Application.DocumentManager.MdiActiveDocument;
         internal List<SpecGroup> Groups { get; private set; } = new List<SpecGroup>();
@@ -31,9 +31,6 @@ namespace SpecBlocks
         /// </summary>
         public void CreateTable()
         {
-            // Регенерация - для обновления полей
-            Doc.Database.EvaluateFields();
-
             // Выбор блоков
             SelBlocks.Select();
 

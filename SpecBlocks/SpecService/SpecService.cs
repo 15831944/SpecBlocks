@@ -10,64 +10,64 @@ using SpecBlocks.Options;
 
 namespace SpecBlocks
 {
-   public class SpecService
-   {      
-      private ISpecCustom specCustom;      
+    public class SpecService
+    {
+        private ISpecCustom specCustom;
 
-      public SpecService(ISpecCustom specCustom)
-      {         
-         this.specCustom = specCustom;         
-      }
+        public SpecService(ISpecCustom specCustom)
+        {
+            this.specCustom = specCustom;
+        }
 
-      /// <summary>
-      /// Создание спецификации
-      /// </summary>
-      public void CreateSpec()
-      {
-         SpecOptions specOpt = getSpecOptions();
-         if (specOpt == null)
-         {
-            throw new Exception("Настройки таблицы не определены.");
-         }
-         // Клас создания таблицы по заданным настройкам
-         SpecTable specTable = new SpecTable(specOpt);
-         specTable.CreateTable();
-      }
-
-      private SpecOptions getSpecOptions()
-      {         
-         SpecOptions specOptions = null;
-         if (File.Exists(specCustom.File))
-         {
-            try
+        /// <summary>
+        /// Создание спецификации
+        /// </summary>
+        public void CreateSpec()
+        {
+            SpecOptions specOpt = GetSpecOptions();
+            if (specOpt == null)
             {
-               // Загрузка настроек таблицы из файла XML
-               specOptions = SpecOptions.Load(specCustom.File);
+                throw new Exception("Настройки таблицы не определены.");
             }
-            catch (Exception ex)
-            {
-               Logger.Log.Error(ex, $"Ошибка при попытке загрузки настроек таблицы из XML файла {specCustom.File}");
-            }
-         }
+            // Клас создания таблицы по заданным настройкам
+            SpecTable specTable = new SpecTable(specOpt);
+            specTable.CreateTable();
+        }
 
-         if (specOptions == null)
-         {
-            // Создать дефолтные
-            specOptions = specCustom.GetDefaultOptions();
-            // Сохранение дефолтных настроек 
-            try
+        public SpecOptions GetSpecOptions()
+        {
+            SpecOptions specOptions = null;
+            if (File.Exists(specCustom.File))
             {
-               specOptions.Save(specCustom.File);
+                try
+                {
+                    // Загрузка настроек таблицы из файла XML
+                    specOptions = SpecOptions.Load(specCustom.File);
+                }
+                catch (Exception ex)
+                {
+                    Logger.Log.Error(ex, $"Ошибка при попытке загрузки настроек таблицы из XML файла {specCustom.File}");
+                }
             }
-            catch (Exception exSave)
+
+            if (specOptions == null)
             {
-               Logger.Log.Error(exSave, $"Попытка сохранение настроек в файл {specCustom.File}");
+                // Создать дефолтные
+                specOptions = specCustom.GetDefaultOptions();
+                // Сохранение дефолтных настроек 
+                try
+                {
+                    specOptions.Save(specCustom.File);
+                }
+                catch (Exception exSave)
+                {
+                    Logger.Log.Error(exSave, $"Попытка сохранение настроек в файл {specCustom.File}");
+                }
             }
-         }
 
-         return specOptions;
-      }
+            return specOptions;
+        }
 
-      
-   }
+
+    }
 }

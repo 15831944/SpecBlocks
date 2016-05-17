@@ -12,7 +12,7 @@ namespace SpecBlocks
     /// <summary>
     /// Элемент спецификации
     /// </summary>
-    internal class SpecItem : IEquatable<SpecItem>
+    class SpecItem : IEquatable<SpecItem>
     {
         public Dictionary<string, DBText> AttrsDict { get; private set; }
         public string BlName { get; private set; }
@@ -34,6 +34,9 @@ namespace SpecBlocks
         /// </summary>
         public static List<SpecItem> FilterSpecItems(SpecTable specTable)
         {
+            // обновления полей в чертеже
+            specTable.Doc.Database.EvaluateFields();
+
             List<SpecItem> items = new List<SpecItem>();
             List<ObjectId> idBlRefsFiltered = new List<ObjectId>();
             // Обработка блоков и отбор блоков монолитных конструкций

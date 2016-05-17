@@ -7,7 +7,7 @@ namespace SpecBlocks
     /// <summary>
     /// Группирование элементов в спецификации
     /// </summary>
-    internal class SpecGroup
+    class SpecGroup
     {
         public string Name { get; private set; }
         /// <summary>
