@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using Autodesk.AutoCAD.ApplicationServices;
 using SpecBlocks;
 using SpecBlocks.Options;
 
@@ -13,9 +14,13 @@ namespace SpecBlocks
     public class SpecService
     {
         private ISpecCustom specCustom;
+        public static SpecOptions Optinons { get; private set; }
+        internal static Document Doc { get; private set; }
+        internal static bool IsNumbering { get; private set; }
 
         public SpecService(ISpecCustom specCustom)
         {
+            Doc = Application.DocumentManager.MdiActiveDocument;
             this.specCustom = specCustom;
         }
 
@@ -23,15 +28,30 @@ namespace SpecBlocks
         /// Создание спецификации
         /// </summary>
         public void CreateSpec()
-        {
-            SpecOptions specOpt = GetSpecOptions();
-            if (specOpt == null)
+        {            
+            Optinons = GetSpecOptions();
+            if (Optinons == null)
             {
                 throw new Exception("Настройки таблицы не определены.");
             }
             // Клас создания таблицы по заданным настройкам
-            SpecTable specTable = new SpecTable(specOpt);
+            SpecTable specTable = new SpecTable();
             specTable.CreateTable();
+        }
+
+        public List<IGrouping<SpecItem, SpecItem>> SelectAndGroupBlocks()
+        {
+            IsNumbering = true;
+            Optinons = GetSpecOptions();
+            if (Optinons == null)            
+                throw new Exception("Настройки таблицы не определены.");
+            // Выбор блоков
+            var sel = new SelectBlocks();
+            sel.Select();
+            // Фильтр блоков
+            var items = SpecItem.FilterSpecItems(sel);
+            // Группировка элементов
+            return SpecGroup.GroupingForNumbering(items);
         }
 
         public SpecOptions GetSpecOptions()
@@ -67,7 +87,5 @@ namespace SpecBlocks
 
             return specOptions;
         }
-
-
     }
 }

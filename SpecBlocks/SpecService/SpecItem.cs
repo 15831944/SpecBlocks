@@ -6,15 +6,17 @@ using AcadLib.Errors;
 using AcadLib.Extensions;
 using Autodesk.AutoCAD.DatabaseServices;
 using System.Drawing;
+using SpecBlocks.Options;
 
 namespace SpecBlocks
 {
     /// <summary>
     /// Элемент спецификации
     /// </summary>
-    class SpecItem : IEquatable<SpecItem>
+    public class SpecItem : IEquatable<SpecItem>
     {
         public Dictionary<string, DBText> AttrsDict { get; private set; }
+        public Dictionary<string, string> MastHaveParamsWoKey { get; private set; }
         public string BlName { get; private set; }
         // Название группы для элемента
         public string Group { get; private set; } = "";
@@ -22,7 +24,17 @@ namespace SpecBlocks
         /// <summary>
         /// Ключевое свойство элемента - обычно это Марка элемента.
         /// </summary>
-        public string Key { get; private set; }
+        public string Key { get; set; }
+
+        /// <summary>
+        /// Тип блока
+        /// </summary>
+        public string Type { get; set; }
+
+        /// <summary>
+        /// Атрибут ключа - Марка
+        /// </summary>
+        public AttributeReference AtrKey { get; set; }
 
         public SpecItem(ObjectId idBlRef)
         {
@@ -32,18 +44,18 @@ namespace SpecBlocks
         /// <summary>
         /// Фильтр блоков. И составление списка всех элементов (1 блок - 1 элемент).
         /// </summary>
-        public static List<SpecItem> FilterSpecItems(SpecTable specTable)
+        public static List<SpecItem> FilterSpecItems(SelectBlocks sel)
         {
             // обновления полей в чертеже
-            specTable.Doc.Database.EvaluateFields();
+            SpecService.Doc.Database.EvaluateFields();
 
             List<SpecItem> items = new List<SpecItem>();
             List<ObjectId> idBlRefsFiltered = new List<ObjectId>();
             // Обработка блоков и отбор блоков монолитных конструкций
-            foreach (var idBlRef in specTable.SelBlocks.IdsBlRefSelected)
+            foreach (var idBlRef in sel.IdsBlRefSelected)
             {
                 SpecItem specItem = new SpecItem(idBlRef);
-                if (specItem.Define(specTable))
+                if (specItem.Define(SpecService.Optinons))
                 {
                     items.Add(specItem);
                     idBlRefsFiltered.Add(idBlRef);
@@ -53,16 +65,16 @@ namespace SpecBlocks
             if (items.Count == 0)
             {
                 //throw new Exception("Не определены блоки монолитных конструкций.");
-                specTable.Doc.Editor.WriteMessage("\nНе определены блоки монолитных конструкций.");
+                SpecService.Doc.Editor.WriteMessage("\nНе определены блоки монолитных конструкций.");
                 return items;                
             }
             else
             {
-                specTable.Doc.Editor.WriteMessage($"\nОтобрано блоков для спецификации: {items.Count}.");
+                SpecService.Doc.Editor.WriteMessage($"\nОтобрано блоков для спецификации: {items.Count}.");
             }
 
             // Проверка дубликатов
-            if (specTable.SpecOptions.CheckDublicates)
+            if (SpecService.Optinons.CheckDublicates)
             {
                 AcadLib.Blocks.Dublicate.CheckDublicateBlocks.Check(idBlRefsFiltered);
             }
@@ -74,7 +86,7 @@ namespace SpecBlocks
         /// Проверка соответствия значениям в столбцах
         /// </summary>
         /// <param name="columnsValue"></param>
-        public void CheckColumnsValue(List<ColumnValue> columnsValue, SpecTable specTable)
+        public void CheckColumnsValue(List<ColumnValue> columnsValue)
         {
             string err = string.Empty;
             foreach (var colVal in columnsValue)
@@ -89,7 +101,9 @@ namespace SpecBlocks
                 {
                     if (!colVal.Value.Equals(atr.TextString, StringComparison.OrdinalIgnoreCase))
                     {
-                        err += $"'{colVal.ColumnSpec.ItemPropName}'='{atr.TextString}' не соответствует эталонному значению '{colVal.Value}', '{specTable.SpecOptions.KeyPropName}' = '{Key}'.\n";
+                        err += $"'{colVal.ColumnSpec.ItemPropName}'='{atr.TextString}' " + 
+                            $"не соответствует эталонному значению '{colVal.Value}', " + 
+                            $"'{SpecService.Optinons.KeyPropName}' = '{Key}'.\n";
                     }
                 }
                 else
@@ -100,11 +114,12 @@ namespace SpecBlocks
             }
             if (!string.IsNullOrEmpty(err))
             {
-                Inspector.AddError($"Ошибки в блоке {BlName}: {err} Этот блок попадет в спецификацию с эталонными значениями.", IdBlRef, icon: SystemIcons.Error);
+                Inspector.AddError($"Ошибки в блоке {BlName}: {err} " + 
+                    $"Этот блок попадет в спецификацию с эталонными значениями.", IdBlRef, icon: SystemIcons.Error);
             }
         }
 
-        public bool Define(SpecTable specTable)
+        public bool Define(SpecOptions options)
         {
             if (IdBlRef.IsNull)
             {
@@ -123,7 +138,7 @@ namespace SpecBlocks
                 string err = string.Empty;
                 BlName = blRef.GetEffectiveName();
 
-                if (Regex.IsMatch(BlName, specTable.SpecOptions.BlocksFilter.BlockNameMatch, RegexOptions.IgnoreCase))
+                if (Regex.IsMatch(BlName, options.BlocksFilter.BlockNameMatch, RegexOptions.IgnoreCase))
                 {
                     if (blRef.AttributeCollection == null)
                     {
@@ -136,10 +151,10 @@ namespace SpecBlocks
                         // ???
 
                         // все атрибуты блока
-                        AttrsDict = blRef.GetAttributeDictionary();
+                        AttrsDict = blRef.GetAttributeDictionary();                        
 
                         // Проверка типа блока
-                        var typeBlock = specTable.SpecOptions.BlocksFilter.Type;
+                        var typeBlock = options.BlocksFilter.Type;
                         if (typeBlock != null)
                         {
                             DBText atrType;
@@ -148,8 +163,10 @@ namespace SpecBlocks
                                 if (!typeBlock.Name.Equals(atrType.TextString, StringComparison.OrdinalIgnoreCase))
                                 {
                                     // Свойство типа не соответствует требованию  
-                                    err += $"Свойство '{typeBlock.BlockPropName}'='{atrType.TextString}' не соответствует требуемому значению '{typeBlock.Name}'. ";
+                                    err += $"Свойство '{typeBlock.BlockPropName}'='{atrType.TextString}' " + 
+                                        $"не соответствует требуемому значению '{typeBlock.Name}'. ";
                                 }
+                                Type = atrType.TextString;
                             }
                             // В блоке нет свойства Типа
                             else
@@ -158,31 +175,37 @@ namespace SpecBlocks
                             }
                         }
 
+                        MastHaveParamsWoKey = new Dictionary<string, string>();
                         // Проверка обязательных атрибутов                              
-                        foreach (var atrMustHave in specTable.SpecOptions.BlocksFilter.AttrsMustHave)
+                        foreach (var atrMustHave in options.BlocksFilter.AttrsMustHave)
                         {
                             if (!AttrsDict.ContainsKey(atrMustHave))
                             {
                                 err += $"Нет обязательного свойства: '{atrMustHave}'. ";
                             }
+                            if (!atrMustHave.Equals(options.KeyPropName, StringComparison.OrdinalIgnoreCase))
+                            {
+                                MastHaveParamsWoKey.Add(atrMustHave, AttrsDict[atrMustHave].TextString);
+                            }
                         }
 
                         // определение Группы
                         DBText groupAttr;
-                        if (AttrsDict.TryGetValue(specTable.SpecOptions.GroupPropName, out groupAttr))
+                        if (AttrsDict.TryGetValue(options.GroupPropName, out groupAttr))
                         {
                             Group = groupAttr.TextString;
                         }
 
                         // Ключевое свойство
                         DBText keyAttr;
-                        if (AttrsDict.TryGetValue(specTable.SpecOptions.KeyPropName, out keyAttr))
+                        if (AttrsDict.TryGetValue(options.KeyPropName, out keyAttr))
                         {
                             Key = keyAttr.TextString;
+                            AtrKey = keyAttr as AttributeReference;
                         }
                         else
                         {
-                            err += $"Не определено ключевое свойство '{specTable.SpecOptions.KeyPropName}'. ";
+                            err += $"Не определено ключевое свойство '{options.KeyPropName}'. ";
                         }
                     }
 
@@ -219,7 +242,10 @@ namespace SpecBlocks
             return Group.Equals(other.Group) &&
                    Key.Equals(other.Key) &&
                    AttrsDict.Count == other.AttrsDict.Count &&
-                   AttrsDict.All(i => other.AttrsDict.ContainsKey(i.Key) && AttrsDict[i.Key].TextString.Equals(other.AttrsDict[i.Key].TextString));
+                   AttrsDict.All(i => 
+                                    other.AttrsDict.ContainsKey(i.Key) &&
+                                    AttrsDict[i.Key].TextString.Equals(other.AttrsDict[i.Key].TextString)
+                                );
         }
     }
 }

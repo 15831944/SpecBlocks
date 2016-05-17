@@ -71,6 +71,7 @@
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SpecService\ColumnValue.cs" />
+    <Compile Include="SpecService\Numbering\ItemNumberingComparer.cs" />
     <Compile Include="SpecService\SpecService.cs" />
     <Compile Include="SpecService\ISpecCustom.cs" />
     <Compile Include="SpecService\Logger.cs" />

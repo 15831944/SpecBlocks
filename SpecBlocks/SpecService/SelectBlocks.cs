@@ -6,7 +6,7 @@ using Autodesk.AutoCAD.EditorInput;
 namespace SpecBlocks
 {
     // Выбор блоков монолитных конструкцийй
-    internal class SelectBlocks
+    public class SelectBlocks
     {
         public List<ObjectId> IdsBlRefSelected { get; private set; }
 

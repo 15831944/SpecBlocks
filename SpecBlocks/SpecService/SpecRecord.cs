@@ -6,20 +6,20 @@ namespace SpecBlocks
    /// <summary>
    /// Обна строка в таблице - элементы с одним ключом
    /// </summary>
-   class SpecRecord
+   public class SpecRecord
    {
       public List<ColumnValue> ColumnsValue { get; private set; } = new List<ColumnValue>();
       public int Count { get; set; }
       public List<SpecItem> Items { get; set; }
       public string Key { get; set; }
 
-      public SpecRecord(string key, List<SpecItem> items, SpecTable specTable)
+      public SpecRecord(string key, List<SpecItem> items)
       {
          Key = key;
          Items = items ?? new List<SpecItem>();
          Count = Items.Count;
          // Составление строки таблицы
-         foreach (var column in specTable.SpecOptions.TableOptions.Columns)
+         foreach (var column in SpecService.Optinons.TableOptions.Columns)
          {
             ColumnValue colVal = new ColumnValue(column);
             // Кол
@@ -43,14 +43,14 @@ namespace SpecBlocks
       /// <summary>
       /// Проверка записей - должны быть одинаковые свойства у всех элементов
       /// </summary>
-      public void CheckRecords(SpecTable specTable)
+      public void CheckRecords()
       {
          //Inspector.AddError("Пока не реализована проверка блоков с одним ключом но различающимися остальными свойствами. Скоро сделаю.");
          // TODO: Проверка - все свойства элементов должны совпадать между собой
          // Отличающиеся элементы вывести в инспектор.
 
          // Все записи должны соответствовать значениям в ColumnsValue
-         Items.ForEach(i => i.CheckColumnsValue(ColumnsValue, specTable));
+         Items.ForEach(i => i.CheckColumnsValue(ColumnsValue));
       }
    }
 }

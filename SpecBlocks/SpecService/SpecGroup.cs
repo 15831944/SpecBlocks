@@ -1,13 +1,15 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using AcadLib.Errors;
+using SpecBlocks.Numbering;
 
 namespace SpecBlocks
 {
     /// <summary>
     /// Группирование элементов в спецификации
     /// </summary>
-    class SpecGroup
+    public class SpecGroup
     {
         public string Name { get; private set; }
         /// <summary>
@@ -20,29 +22,37 @@ namespace SpecBlocks
             Name = name;
         }
 
-        public static List<SpecGroup> Grouping(SpecTable specTable)
+        public static List<SpecGroup> Grouping(List<SpecItem> items)
         {
             List<SpecGroup> groups = new List<SpecGroup>();
-            var itemsGroupBy = specTable.Items.GroupBy(i => i.Group).OrderBy(g => g.Key);
+            var itemsGroupBy = items.GroupBy(i => i.Group).OrderBy(g => g.Key);
             foreach (var itemGroup in itemsGroupBy)
             {
                 SpecGroup group = new SpecGroup(itemGroup.Key);
-                group.Calc(itemGroup, specTable);
+                group.Calc(itemGroup);
                 // проверка уникальности элементов в группе
-                group.Check(specTable);
+                group.Check();
                 groups.Add(group);
             }
             return groups;
         }
 
-        public void Calc(IGrouping<string, SpecItem> itemGroup, SpecTable specTable)
+        internal static List<IGrouping<SpecItem, SpecItem>> GroupingForNumbering(List<SpecItem> items)
+        {
+            ItemNumberingComparer iNumComparer = ItemNumberingComparer.New;
+            List<SpecItem> groups = new List<SpecItem>();            
+            var itemsGroupBy = items.GroupBy(i => i, iNumComparer).OrderByDescending(g => g.Key, iNumComparer);
+            return itemsGroupBy.ToList();
+        }
+
+        public void Calc(IGrouping<string, SpecItem> itemGroup)
         {
             // itemGroup - элементы одной группы.
 
             // Нужно сгруппировать по ключевому свойству
             //var uniqRecs = itemGroup.GroupBy(m => m.Key).OrderBy(m => m.Key, new AcadLib.Comparers.AlphanumComparator());
 
-            //  Группировка по уникальным значениям каждого параметра
+            //  Группировка по уникальным значениям ключа
             var uniqRecs = itemGroup.GroupBy(m => m).OrderBy(m => m.Key.Key, new AcadLib.Comparers.AlphanumComparator());
 
             //var groups = piles.GroupBy(g => new { g.View, g.TopPileAfterBeat, g.TopPileAfterCut, g.BottomGrillage, g.PilePike })
@@ -50,40 +60,46 @@ namespace SpecBlocks
                         
             foreach (var urec in uniqRecs)
             {                
-                SpecRecord rec = new SpecRecord(urec.Key.Key, urec.ToList(), specTable);
-                Records.Add(rec);
+                SpecRecord rec = new SpecRecord(urec.Key.Key, urec.ToList());
+                Records.Add(rec);                
 
                 // Добавление элементов определенных групп в инспектор для показа пользователю                
-                foreach (var item in urec)
-                {                    
-                        Inspector.AddError($"{item.BlName} {specTable.SpecOptions.KeyPropName}={item.Key}", item.IdBlRef,
-                            icon: System.Drawing.SystemIcons.Information);                                         
-                }                
+                if (!SpecService.IsNumbering)
+                {
+                    foreach (var item in urec)
+                    {
+                        Inspector.AddError($"{item.BlName} {SpecService.Optinons.KeyPropName}={item.Key}", item.IdBlRef,
+                            icon: System.Drawing.SystemIcons.Information);
+                    }
+                }               
             }
 
             // Дублирование марки
-            var errRecsDublKey = uniqRecs.GroupBy(g => g.Key.Key).Where(w=>w.Skip(1).Any());            
-            foreach (var errRecDublKey in errRecsDublKey)
+            if (!SpecService.IsNumbering)
             {
-                int i = 0;                
-                foreach (var items in errRecDublKey)
+                var errRecsDublKey = uniqRecs.GroupBy(g => g.Key.Key).Where(w => w.Skip(1).Any());
+                foreach (var errRecDublKey in errRecsDublKey)
                 {
-                    i++;
-                    foreach (var rec in items)
+                    int i = 0;
+                    foreach (var items in errRecDublKey)
                     {
-                        Inspector.AddError($"Дублирование марки в блоке {rec.BlName} {specTable.SpecOptions.KeyPropName}='{rec.Key}'-{i}, такая марка уже определена с другими параметрами блока.", rec.IdBlRef,
-                        icon: System.Drawing.SystemIcons.Warning);
-                    }                    
-                }                
-            }            
-        }
+                        i++;
+                        foreach (var rec in items)
+                        {
+                            Inspector.AddError($"Дублирование марки в блоке {rec.BlName} {SpecService.Optinons.KeyPropName}='{rec.Key}'-{i}, такая марка уже определена с другими параметрами блока.", rec.IdBlRef,
+                            icon: System.Drawing.SystemIcons.Warning);
+                        }
+                    }
+                }
+            }           
+        }        
 
         /// <summary>
         /// Проверка группы
         /// </summary>
-        public void Check(SpecTable specTable)
+        public void Check()
         {
-            Records.ForEach(r => r.CheckRecords(specTable));
+            Records.ForEach(r => r.CheckRecords());
         }
     }
 }

@@ -13,16 +13,13 @@ using AcadLib;
 namespace SpecBlocks
 {
     class SpecTable
-    {
-        internal Document Doc { get; private set; } = Application.DocumentManager.MdiActiveDocument;
+    {        
         internal List<SpecGroup> Groups { get; private set; } = new List<SpecGroup>();
         internal List<SpecItem> Items { get; private set; } = new List<SpecItem>();
-        internal SelectBlocks SelBlocks { get; private set; } = new SelectBlocks();
-        internal SpecOptions SpecOptions { get; private set; }
+        internal SelectBlocks SelBlocks { get; private set; } = new SelectBlocks();        
 
-        public SpecTable(SpecOptions options)
-        {
-            SpecOptions = options;
+        public SpecTable()
+        {            
         }
 
         /// <summary>
@@ -34,13 +31,13 @@ namespace SpecBlocks
             // Выбор блоков
             SelBlocks.Select();
 
-            using (var t = Doc.TransactionManager.StartTransaction())
+            using (var t = SpecService.Doc.TransactionManager.StartTransaction())
             {
                 // Фильтрация блоков
-                Items = SpecItem.FilterSpecItems(this);
+                Items = SpecItem.FilterSpecItems(SelBlocks);
                 if (Items.Count == 0) return;
                 // Группировка элементов
-                Groups = SpecGroup.Grouping(this);
+                Groups = SpecGroup.Grouping(Items);
 
                 // Создание таблицы
                 Table table = getTable();
@@ -54,21 +51,22 @@ namespace SpecBlocks
         private Table getTable()
         {
             Table table = new Table();
-            table.SetDatabaseDefaults(Doc.Database);
-            table.TableStyle = Doc.Database.GetTableStylePIK(true); // если нет стиля ПИк в этом чертеже, то он скопируетс из шаблона, если он найдется
-            if (!string.IsNullOrEmpty(SpecOptions.TableOptions.Layer))
+            table.SetDatabaseDefaults(SpecService.Doc.Database);
+            table.TableStyle = SpecService.Doc.Database.GetTableStylePIK(true); // если нет стиля ПИк в этом чертеже, то он скопируетс из шаблона, если он найдется
+            if (!string.IsNullOrEmpty(SpecService.Optinons.TableOptions.Layer))
             {
-                table.LayerId = AcadLib.Layers.LayerExt.GetLayerOrCreateNew(new AcadLib.Layers.LayerInfo(SpecOptions.TableOptions.Layer));
+                table.LayerId = AcadLib.Layers.LayerExt.GetLayerOrCreateNew(
+                        new AcadLib.Layers.LayerInfo(SpecService.Optinons.TableOptions.Layer));
             }
 
             int rows = 2 + Groups.Count + Groups.Sum(g => g.Records.Count);
-            table.SetSize(rows, SpecOptions.TableOptions.Columns.Count);
+            table.SetSize(rows, SpecService.Optinons.TableOptions.Columns.Count);
             table.SetBorders(LineWeight.LineWeight050);
             table.SetRowHeight(8);
 
             for (int i = 0; i < table.Columns.Count; i++)
             {
-                var specCol = SpecOptions.TableOptions.Columns[i];
+                var specCol = SpecService.Optinons.TableOptions.Columns[i];
                 var col = table.Columns[i];
                 col.Alignment = specCol.Aligment;
                 col.Width = specCol.Width;
@@ -83,7 +81,7 @@ namespace SpecBlocks
             var rowTitle = table.Cells[0, 0];
             rowTitle.Alignment = CellAlignment.MiddleCenter;
             rowTitle.TextHeight = 5;
-            rowTitle.TextString = SpecOptions.TableOptions.Title;
+            rowTitle.TextString = SpecService.Optinons.TableOptions.Title;
 
             // Строка заголовков столбцов            
             var rowHeaders = table.Rows[1];
@@ -135,8 +133,8 @@ namespace SpecBlocks
 
         private void insertTable(Table table)
         {
-            Database db = Doc.Database;
-            Editor ed = Doc.Editor;
+            Database db = SpecService.Doc.Database;
+            Editor ed = SpecService.Doc.Editor;
 
             TableJig jigTable = new TableJig(table, 1 / db.Cannoscale.Scale, "Вставка таблицы");
             if (ed.Drag(jigTable).Status == PromptStatus.OK)

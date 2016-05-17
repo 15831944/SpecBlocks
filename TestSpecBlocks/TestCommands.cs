@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using AcadLib.Errors;
 using Autodesk.AutoCAD.ApplicationServices;
 using Autodesk.AutoCAD.DatabaseServices;
+using Autodesk.AutoCAD.EditorInput;
 using Autodesk.AutoCAD.Runtime;
 using Autodesk.AutoCAD.Windows;
 using SpecBlocks;
@@ -17,85 +18,100 @@ using SpecBlocks.Options;
 
 namespace TestSpecBlocks
 {
-   public class TestCommands
-   {
-      [CommandMethod("TestCreateTable")]
-      public void TestCreateTable()
-      {
-         try
-         {
-            Inspector.Clear();            
-            var specService = new SpecService(new SpecTest());
-            specService.CreateSpec();
-         }
-         catch (System.Exception ex)
-         {
-            Application.ShowAlertDialog(ex.Message);
-         }         
+    public class TestCommands
+    {
+        [CommandMethod("TestCreateTable")]
+        public void TestCreateTable()
+        {
+            Document doc = Application.DocumentManager.MdiActiveDocument;
+            Editor ed = doc.Editor;
+            Database db = doc.Database;
 
-         if (Inspector.HasErrors)
+            using (var t = db.TransactionManager.StartTransaction())
+            {
+                SpecService specService = new SpecService(new SpecTest());
+                var groups = specService.SelectAndGroupBlocks();
+
+                int index = 1;
+                foreach (var group in groups)
+                {
+                    foreach (var item in group)
+                    {
+                        if (item.AtrKey != null)
+                        {
+                            item.AtrKey.UpgradeOpen();
+                            item.AtrKey.TextString = index.ToString();
+                            item.Key = index.ToString();
+                            Inspector.AddError($"{item.BlName} {SpecBlocks.SpecService.Optinons.KeyPropName}={item.Key}", item.IdBlRef,
+                                    icon: System.Drawing.SystemIcons.Information);
+                        }                        
+                    }
+                    index++;
+                }
+                t.Commit();
+            }
+
+        }
+    }
+
+    class SpecTest : ISpecCustom
+    {
+        private const string name = "КР_Спец_Отверстия в плите";
+
+        public string File
+        {
+            get
+            {
+                return Path.Combine(@"\\dsk2.picompany.ru\project\CAD_Settings\AutoCAD_server\ShareSettings\КР-МН\Спецификации\КР-МН\Спецификации\" + name + ".xml");
+            }
+        }
+
+        public SpecOptions GetDefaultOptions()
+        {
+            SpecOptions specHoleOpt = new SpecOptions();
+
+            specHoleOpt.CheckDublicates = true;
+            specHoleOpt.Name = name;
+
+            // Фильтр для блоков
+            specHoleOpt.BlocksFilter = new BlocksFilter();
+            // Имя блока начинается с "КР_"
+            specHoleOpt.BlocksFilter.BlockNameMatch = "КР_Отв в плите";
+            // Обязательные атрибуты
+            specHoleOpt.BlocksFilter.AttrsMustHave = new List<string>()
          {
-            Inspector.Show();
-         }
-      }
-   }
-
-   class SpecTest : ISpecCustom
-   {
-      public string File
-      {
-         get
-         {
-            return Path.Combine(Assembly.GetExecutingAssembly().Location,  "Test.xml");
-         }
-      }
-
-      public SpecOptions GetDefaultOptions()
-      {
-         SpecOptions specMonolOpt = new SpecOptions();
-
-         specMonolOpt.Name = "Test";
-
-         // Фильтр для блоков
-         specMonolOpt.BlocksFilter = new BlocksFilter();
-         // Имя блока начинается с "КР_"
-         specMonolOpt.BlocksFilter.BlockNameMatch = "^КР_";
-         // Обязательные атрибуты
-         specMonolOpt.BlocksFilter.AttrsMustHave = new List<string>()
-         {
-            "ТИП", "МАРКА", "НАИМЕНОВАНИЕ"
+            "ТИП", "МАРКА", "НАЗНАЧЕНИЕ", "РАЗМЕР"
          };
-         // Тип блока - атрибут ТИП = Монолит
-         specMonolOpt.BlocksFilter.Type = new ItemProp() { BlockPropName = "ТИП", Name = "Монолит", BlockPropType = EnumBlockProperty.Attribute };
+            // Тип блока - атрибут ТИП = Отверстие в плите
+            specHoleOpt.BlocksFilter.Type = new ItemProp() { BlockPropName = "ТИП", Name = "Отверстие в плите", BlockPropType = EnumBlockProperty.Attribute };
 
-         specMonolOpt.GroupPropName = "ГРУППА";
-         specMonolOpt.KeyPropName = "МАРКА";
+            specHoleOpt.GroupPropName = ""; // Нет группировки
+            specHoleOpt.KeyPropName = "МАРКА";
 
-         // Свойства элемента блока
-         specMonolOpt.ItemProps = new List<ItemProp>()
+            // Свойства элемента блока
+            specHoleOpt.ItemProps = new List<ItemProp>()
          {
             new ItemProp () { Name = "Марка", BlockPropName = "МАРКА", BlockPropType = EnumBlockProperty.Attribute },
-            new ItemProp () { Name = "Обозначение", BlockPropName = "ОБОЗНАЧЕНИЕ", BlockPropType = EnumBlockProperty.Attribute },
-            new ItemProp () { Name = "Наименование", BlockPropName = "НАИМЕНОВАНИЕ", BlockPropType = EnumBlockProperty.Attribute },
-            new ItemProp () { Name = "Масса", BlockPropName = "МАССА", BlockPropType = EnumBlockProperty.Attribute },
+            new ItemProp () { Name = "Размер", BlockPropName = "РАЗМЕР", BlockPropType = EnumBlockProperty.Attribute },
+            new ItemProp () { Name = "Назначение", BlockPropName = "НАЗНАЧЕНИЕ", BlockPropType = EnumBlockProperty.Attribute },
             new ItemProp () { Name = "Примечание", BlockPropName = "ПРИМЕЧАНИЕ", BlockPropType = EnumBlockProperty.Attribute },
          };
 
-         // Настройки Таблицы
-         specMonolOpt.TableOptions = new TableOptions();
-         specMonolOpt.TableOptions.Title = "Спецификация к схеме расположения элементов замаркированных на данном листе";
-         specMonolOpt.TableOptions.Layer = "КР_Таблицы";
-         specMonolOpt.TableOptions.Columns = new List<TableColumn>()
+            // Настройки Таблицы
+            specHoleOpt.TableOptions = new TableOptions();
+            specHoleOpt.TableOptions.Title = "Ведомость инженерных отверстий плиты";
+            specHoleOpt.TableOptions.Layer = "КР_Таблицы";
+            specHoleOpt.TableOptions.Columns = new List<TableColumn>()
          {
-            new TableColumn () { Name = "Марка", Aligment = CellAlignment.MiddleCenter, ItemPropName = "Марка", Width = 15 },
-            new TableColumn () { Name = "Обозначение", Aligment = CellAlignment.MiddleLeft, ItemPropName = "Обозначение", Width = 60 },
-            new TableColumn () { Name = "Наименование", Aligment = CellAlignment.MiddleLeft, ItemPropName = "Наименование", Width = 65 },
-            new TableColumn () { Name = "Кол.", Aligment = CellAlignment.MiddleCenter, ItemPropName = "Count", Width = 10 },
-            new TableColumn () { Name = "Масса, ед. кг", Aligment = CellAlignment.MiddleCenter, ItemPropName = "Масса", Width = 15 },
-            new TableColumn () { Name = "Примечание", Aligment = CellAlignment.MiddleLeft, ItemPropName = "Примечание", Width = 20 },
+            new TableColumn () { Name = "Марка отв.", Aligment = CellAlignment.MiddleCenter, ItemPropName = "Марка", Width = 10 },
+            new TableColumn () { Name = "Размеры, мм", Aligment = CellAlignment.MiddleCenter, ItemPropName = "Размер", Width = 20 },
+            new TableColumn () { Name = "Назначение", Aligment = CellAlignment.MiddleCenter, ItemPropName = "Назначение", Width = 20 },
+            new TableColumn () { Name = "Кол-во, шт.", Aligment = CellAlignment.MiddleCenter, ItemPropName = "Count", Width = 15 },
+            new TableColumn () { Name = "Примечание", Aligment = CellAlignment.MiddleLeft, ItemPropName = "Примечание", Width = 30 },
          };
 
-         return specMonolOpt;
-      }      
-   }
+            return specHoleOpt;
+        }
+    }
+
 }
