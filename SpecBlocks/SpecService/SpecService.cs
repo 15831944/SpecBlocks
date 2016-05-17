@@ -22,6 +22,7 @@ namespace SpecBlocks
         {
             Doc = Application.DocumentManager.MdiActiveDocument;
             this.specCustom = specCustom;
+            IsNumbering = false;
         }
 
         /// <summary>
