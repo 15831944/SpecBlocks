@@ -47,7 +47,7 @@ namespace SpecBlocks
         public static List<SpecItem> FilterSpecItems(SelectBlocks sel)
         {
             // обновления полей в чертеже
-            SpecService.Doc.Database.EvaluateFields();
+            //SpecService.Doc.Database.EvaluateFields();
 
             List<SpecItem> items = new List<SpecItem>();
             List<ObjectId> idBlRefsFiltered = new List<ObjectId>();
@@ -147,8 +147,8 @@ namespace SpecBlocks
                     }
                     else
                     {
-                        // Регенерация блока                        
-                        // ???
+                        // Обновление полей в блоке
+                        AcadLib.Field.UpdateField.Update(blRef.Id);                        
 
                         // все атрибуты блока
                         AttrsDict = blRef.GetAttributeDictionary();                        
