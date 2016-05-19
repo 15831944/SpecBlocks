@@ -3,54 +3,60 @@ using System.Linq;
 
 namespace SpecBlocks
 {
-   /// <summary>
-   /// Обна строка в таблице - элементы с одним ключом
-   /// </summary>
-   public class SpecRecord
-   {
-      public List<ColumnValue> ColumnsValue { get; private set; } = new List<ColumnValue>();
-      public int Count { get; set; }
-      public List<SpecItem> Items { get; set; }
-      public string Key { get; set; }
+    /// <summary>
+    /// Обна строка в таблице - элементы с одним ключом
+    /// </summary>
+    internal class SpecRecord
+    {
+        public List<ColumnValue> ColumnsValue { get; private set; } = new List<ColumnValue>();
+        public int Count { get; set; }
+        public List<SpecItem> Items { get; set; }
+        public string Key { get; set; }
 
-      public SpecRecord(string key, List<SpecItem> items)
-      {
-         Key = key;
-         Items = items ?? new List<SpecItem>();
-         Count = Items.Count;
-         // Составление строки таблицы
-         foreach (var column in SpecService.Optinons.TableOptions.Columns)
-         {
-            ColumnValue colVal = new ColumnValue(column);
-            // Кол
-            if (column.ItemPropName == "Count")
+        public SpecRecord(string key, List<SpecItem> items)
+        {
+            Key = key;
+            Items = items ?? new List<SpecItem>();
+            Count = Items.Count;
+            // Составление строки таблицы
+            foreach (var column in SpecService.Optinons.TableOptions.Columns)
             {
-               colVal.Value = Items.Count.ToString();
-            }
-            else
-            {
-               // Поиск первой значащей записи в элементах или пустая строка
-               var itemSpec = Items.FirstOrDefault(i => i.AttrsDict.ContainsKey(column.ItemPropName));
-               if (itemSpec != null)
-               {
-                  colVal.Value = itemSpec.AttrsDict[column.ItemPropName].TextString;
-               }
-            }
-            ColumnsValue.Add(colVal);
-         }
-      }
+                ColumnValue colVal = new ColumnValue(column);
+                // Кол
+                if (column.ItemPropName == "Count")
+                {
+                    colVal.Value = Items.Count.ToString();
+                }
+                else
+                {
+                    // Поиск первой значащей записи в элементах или пустая строка
+                    var itemSpec = Items.FirstOrDefault(i => i.Properties.ContainsKey(column.ItemPropName));
+                    if (itemSpec != null)
+                    {
+                        // Префикс по имени блока и параметра
+                        string prefix = string.Empty;
+                        SpecService.Optinons.PrefixParam?.TryGetValue(itemSpec.BlName + column.ItemPropName, out prefix);
 
-      /// <summary>
-      /// Проверка записей - должны быть одинаковые свойства у всех элементов
-      /// </summary>
-      public void CheckRecords()
-      {
-         //Inspector.AddError("Пока не реализована проверка блоков с одним ключом но различающимися остальными свойствами. Скоро сделаю.");
-         // TODO: Проверка - все свойства элементов должны совпадать между собой
-         // Отличающиеся элементы вывести в инспектор.
+                        var prop = itemSpec.Properties[column.ItemPropName];
+                        colVal.Value = prefix + prop.Value;
+                        prop.Value = colVal.Value;  
+                    }
+                }
+                ColumnsValue.Add(colVal);
+            }
+        }
 
-         // Все записи должны соответствовать значениям в ColumnsValue
-         Items.ForEach(i => i.CheckColumnsValue(ColumnsValue));
-      }
-   }
+        /// <summary>
+        /// Проверка записей - должны быть одинаковые свойства у всех элементов
+        /// </summary>
+        public void CheckRecords()
+        {
+            //Inspector.AddError("Пока не реализована проверка блоков с одним ключом но различающимися остальными свойствами. Скоро сделаю.");
+            // TODO: Проверка - все свойства элементов должны совпадать между собой
+            // Отличающиеся элементы вывести в инспектор.
+
+            // Все записи должны соответствовать значениям в ColumnsValue
+            Items.ForEach(i => i.CheckColumnsValue(ColumnsValue));
+        }
+    }
 }

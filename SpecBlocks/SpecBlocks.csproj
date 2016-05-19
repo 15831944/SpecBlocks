@@ -72,6 +72,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SpecService\ColumnValue.cs" />
     <Compile Include="SpecService\Numbering\ItemNumberingComparer.cs" />
+    <Compile Include="SpecService\Property.cs" />
     <Compile Include="SpecService\SpecService.cs" />
     <Compile Include="SpecService\ISpecCustom.cs" />
     <Compile Include="SpecService\Logger.cs" />
@@ -81,6 +82,7 @@
     <Compile Include="SpecService\SpecTable.cs" />
     <Compile Include="SpecService\SpecRecord.cs" />
     <Compile Include="SpecService\SelectBlocks.cs" />
+    <Compile Include="SpecService\XmlSerializableDictionary.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="AutoCADNetLoad.scr" />

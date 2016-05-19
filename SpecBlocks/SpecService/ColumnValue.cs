@@ -5,7 +5,7 @@ namespace SpecBlocks
    /// <summary>
    /// Значение столбца
    /// </summary>
-   public class ColumnValue
+   internal class ColumnValue
    {
       public TableColumn ColumnSpec { get; private set; }
       public string Value { get; set; }

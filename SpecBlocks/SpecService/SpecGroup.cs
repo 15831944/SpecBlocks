@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using AcadLib.Errors;
+using Autodesk.AutoCAD.DatabaseServices;
 using SpecBlocks.Numbering;
 
 namespace SpecBlocks
@@ -9,7 +10,7 @@ namespace SpecBlocks
     /// <summary>
     /// Группирование элементов в спецификации
     /// </summary>
-    public class SpecGroup
+    internal class SpecGroup
     {
         public string Name { get; private set; }
         /// <summary>
@@ -37,12 +38,43 @@ namespace SpecBlocks
             return groups;
         }
 
-        internal static List<IGrouping<SpecItem, SpecItem>> GroupingForNumbering(List<SpecItem> items)
+        internal static List<IGrouping<string, SpecItem>> GroupingForNumbering(List<SpecItem> items)
         {
+            // Предварительная обработка элементова - определение префиксов и т.п.
+            PrepareItemsBeforeGroupsAndNumbering(items);
+
             ItemNumberingComparer iNumComparer = ItemNumberingComparer.New;
-            List<SpecItem> groups = new List<SpecItem>();            
-            var itemsGroupBy = items.GroupBy(i => i, iNumComparer).OrderByDescending(g => g.Key, iNumComparer);
+            List<SpecItem> groups = new List<SpecItem>();
+            var itemsGroupBy = items.GroupBy(g => g.NumPrefix).OrderBy(o => o.Key);
+                //.GroupBy(i => i, iNumComparer).OrderByDescending(g => g.Key, iNumComparer);
             return itemsGroupBy.ToList();
+        }
+
+        private static void PrepareItemsBeforeGroupsAndNumbering(List<SpecItem> items)
+        {
+            if (SpecService.Optinons.NumOptions == null || SpecService.Optinons.NumOptions.PrefixByBlockName == null)
+                return;
+
+            var groupsByName = items.GroupBy(g => g.BlName);
+            foreach (var group in groupsByName)
+            {
+                // Определение префикса по имени блока
+                string prefix;
+                SpecService.Optinons.NumOptions.PrefixByBlockName.TryGetValue(group.Key, out prefix);
+                foreach (var item in group)
+                {
+                    item.NumPrefix = prefix;                    
+                    // Дополнительный параметр сортировки
+                    if(!string.IsNullOrEmpty(SpecService.Optinons.NumOptions.ExGroupNumbering))
+                    {
+                        Property exNum;
+                        if (item.Properties.TryGetValue(SpecService.Optinons.NumOptions.ExGroupNumbering, out exNum))
+                        {
+                            item.ExGroupNumbering = exNum.Value;
+                        }                        
+                    }
+                }
+            }
         }
 
         public void Calc(IGrouping<string, SpecItem> itemGroup)

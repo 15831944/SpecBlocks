@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
+using System.Xml.Serialization;
 using Autodesk.AutoCAD.DatabaseServices;
 
 namespace SpecBlocks.Options
@@ -9,6 +10,87 @@ namespace SpecBlocks.Options
     public enum EnumBlockProperty
     {
         Attribute
+    }
+
+    /// <summary>
+    /// Настойки создания таблицы
+    /// </summary>
+    [Serializable]
+    public class SpecOptions
+    {
+        /// <summary>
+        /// Имя шаблона спецификации
+        /// </summary>
+        public string Name { get; set; }
+        /// <summary>
+        /// Фильтр блоков
+        /// </summary>
+        public BlocksFilter BlocksFilter { get; set; }
+        /// <summary>
+        /// Параметр элемента по которому они будут группироваться в таблице
+        /// </summary>
+        public string GroupPropName { get; set; }
+        /// <summary>
+        /// Свойства блока и правила их определениы
+        /// </summary>
+        public List<ItemProp> ItemProps { get; set; }
+        /// <summary>
+        /// Параметр - группировки элементов по строчкам в группах.
+        /// Обычно это марка элемента.
+        /// Элементы с одним ключом, должны иметь одинаковые остальные параметры. - иначе будет выведено предупреждающее сообщение.
+        /// </summary>
+        public string KeyPropName { get; set; }        
+        /// <summary>
+        /// Настройки таблицы. Столбцы, соотв. свойства элементов
+        /// </summary>
+        public TableOptions TableOptions { get; set; }
+        /// <summary>
+        /// Проверять ли дублирование блоков среди отфильтрованных блоков для спецификации для спецификации из выбранных пользователем.
+        /// </summary>
+        public bool CheckDublicates { get; set; }
+        /// <summary>
+        /// Настройки нумерации блоков
+        /// </summary>
+        public NumberingOptions NumOptions { get; set; }
+        /// <summary>
+        /// Префикс для параметра
+        /// key - имя блока + имя парамтера
+        /// value - префикс
+        /// </summary>
+        public XmlSerializableDictionary<string, string> PrefixParam { get; set; }
+
+        /// <summary>
+        /// Загрузка настроек таблицы из файла
+        /// </summary>            
+        public static SpecOptions Load(string file)
+        {
+            AcadLib.Files.SerializerXml ser = new AcadLib.Files.SerializerXml(file);
+            return ser.DeserializeXmlFile<SpecOptions>();
+        }
+
+        /// <summary>
+        /// Проверка настроек - заполнены ли важные поля, соответствуют ли имена параметров в элементе и в столбцах таблицы.
+        /// NotImplementedException
+        /// </summary>
+        /// <returns></returns>
+        public bool CheckOptions()
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Сохранение файла настроек таблицы в XML в корневой папке программы с именем Name
+        /// </summary>
+        public void Save(string file)
+        {
+            if (string.IsNullOrEmpty(Name))
+            {
+                Logger.Log.Error("Попытка сохранить настройки таблицы SpecOptions без имени.");
+                return;
+            }
+            AcadLib.Files.SerializerXml ser = new AcadLib.Files.SerializerXml(file);
+            ser.SerializeList(this);
+        }
     }
 
     /// <summary>
@@ -47,75 +129,7 @@ namespace SpecBlocks.Options
         /// Имя свойства
         /// </summary>
         public string Name { get; set; }
-    }
-
-    // Настойки создания таблицы
-    public class SpecOptions
-    {
-        /// <summary>
-        /// Фильтр блоков
-        /// </summary>
-        public BlocksFilter BlocksFilter { get; set; }
-        /// <summary>
-        /// Параметр элемента по которому они будут группироваться в таблице
-        /// </summary>
-        public string GroupPropName { get; set; }
-        /// <summary>
-        /// Свойства блока и правила их определениы
-        /// </summary>
-        public List<ItemProp> ItemProps { get; set; }
-        /// <summary>
-        /// Параметр - группировки элементов по строчкам в группах.
-        /// Обычно это марка элемента.
-        /// Элементы с одним ключом, должны иметь одинаковые остальные параметры. - иначе будет выведено предупреждающее сообщение.
-        /// </summary>
-        public string KeyPropName { get; set; }
-        /// <summary>
-        /// Имя шаблона спецификации
-        /// </summary>
-        public string Name { get; set; }
-        /// <summary>
-        /// Настройки таблицы. Столбцы, соотв. свойства элементов
-        /// </summary>
-        public TableOptions TableOptions { get; set; }
-        /// <summary>
-        /// Проверять ли дублирование блоков среди отфильтрованных блоков для спецификации для спецификации из выбранных пользователем.
-        /// </summary>
-        public bool CheckDublicates { get; set; }
-
-        /// <summary>
-        /// Загрузка настроек таблицы из файла
-        /// </summary>            
-        public static SpecOptions Load(string file)
-        {
-            AcadLib.Files.SerializerXml ser = new AcadLib.Files.SerializerXml(file);
-            return ser.DeserializeXmlFile<SpecOptions>();
-        }
-
-        /// <summary>
-        /// Проверка настроек - заполнены ли важные поля, соответствуют ли имена параметров в элементе и в столбцах таблицы.
-        /// NotImplementedException
-        /// </summary>
-        /// <returns></returns>
-        public bool CheckOptions()
-        {
-            throw new NotImplementedException();
-        }
-
-        /// <summary>
-        /// Сохранение файла настроек таблицы в XML в корневой папке программы с именем Name
-        /// </summary>
-        public void Save(string file)
-        {
-            if (string.IsNullOrEmpty(Name))
-            {
-                Logger.Log.Error("Попытка сохранить настройки таблицы SpecOptions без имени.");
-                return;
-            }
-            AcadLib.Files.SerializerXml ser = new AcadLib.Files.SerializerXml(file);
-            ser.SerializeList(this);
-        }
-    }
+    }    
 
     public class TableColumn
     {
@@ -154,5 +168,23 @@ namespace SpecBlocks.Options
         /// Наименование таблицы
         /// </summary>
         public string Title { get; set; }
+    }
+
+    /// <summary>
+    /// Свойства нумерации блоков
+    /// </summary>
+    public class NumberingOptions
+    {
+        /// <summary>
+        /// Префикс перед номером - по имени блоки
+        /// key - имя блока
+        /// value - префикс
+        /// </summary>
+        public XmlSerializableDictionary<string, string> PrefixByBlockName { get; set; }
+        /// <summary>
+        /// Доп параметр группировки для нумерации. Г1.1
+        /// Одинаковые элементы дополнительно группируются по этому параметру для нумерации вида [Prefix][Group].[index]
+        /// </summary>
+        public string ExGroupNumbering { get; set; }
     }
 }

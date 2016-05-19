@@ -13,9 +13,9 @@ namespace SpecBlocks
     /// <summary>
     /// Элемент спецификации
     /// </summary>
-    public class SpecItem : IEquatable<SpecItem>
+    internal class SpecItem : IEquatable<SpecItem>
     {
-        public Dictionary<string, DBText> AttrsDict { get; private set; }
+        public Dictionary<string, Property> Properties { get; private set; }
         public Dictionary<string, string> MastHaveParamsWoKey { get; private set; }
         public string BlName { get; private set; }
         // Название группы для элемента
@@ -29,12 +29,21 @@ namespace SpecBlocks
         /// <summary>
         /// Тип блока
         /// </summary>
-        public string Type { get; set; }
+        public string Type { get; set; } = "";
 
         /// <summary>
         /// Атрибут ключа - Марка
         /// </summary>
         public AttributeReference AtrKey { get; set; }
+
+        /// <summary>
+        /// префикс нумерации элемента
+        /// </summary>
+        public string NumPrefix { get; set; } = "";
+        /// <summary>
+        /// Значение дополнительного параметра нумерации
+        /// </summary>
+        public string ExGroupNumbering { get; set; } = "";
 
         public SpecItem(ObjectId idBlRef)
         {
@@ -46,9 +55,6 @@ namespace SpecBlocks
         /// </summary>
         public static List<SpecItem> FilterSpecItems(SelectBlocks sel)
         {
-            // обновления полей в чертеже
-            //SpecService.Doc.Database.EvaluateFields();
-
             List<SpecItem> items = new List<SpecItem>();
             List<ObjectId> idBlRefsFiltered = new List<ObjectId>();
             // Обработка блоков и отбор блоков монолитных конструкций
@@ -63,9 +69,8 @@ namespace SpecBlocks
             }
 
             if (items.Count == 0)
-            {
-                //throw new Exception("Не определены блоки монолитных конструкций.");
-                SpecService.Doc.Editor.WriteMessage("\nНе определены блоки монолитных конструкций.");
+            {                
+                SpecService.Doc.Editor.WriteMessage($"\nНе определены блоки '{SpecService.Optinons.Name}'.");
                 return items;                
             }
             else
@@ -96,12 +101,12 @@ namespace SpecBlocks
                     continue;
                 }
 
-                DBText atr;
-                if (AttrsDict.TryGetValue(colVal.ColumnSpec.ItemPropName, out atr))
+                Property atr;
+                if (Properties.TryGetValue(colVal.ColumnSpec.ItemPropName, out atr))
                 {
-                    if (!colVal.Value.Equals(atr.TextString, StringComparison.OrdinalIgnoreCase))
+                    if (!colVal.Value.Equals(atr.Value, StringComparison.OrdinalIgnoreCase))
                     {
-                        err += $"'{colVal.ColumnSpec.ItemPropName}'='{atr.TextString}' " + 
+                        err += $"'{colVal.ColumnSpec.ItemPropName}'='{atr.Value}' " + 
                             $"не соответствует эталонному значению '{colVal.Value}', " + 
                             $"'{SpecService.Optinons.KeyPropName}' = '{Key}'.\n";
                     }
@@ -151,22 +156,28 @@ namespace SpecBlocks
                         AcadLib.Field.UpdateField.Update(blRef.Id);                        
 
                         // все атрибуты блока
-                        AttrsDict = blRef.GetAttributeDictionary();                        
+                        var atrs = blRef.GetAttributeDictionary();
+                        Properties = new Dictionary<string, Property>(atrs.Count, StringComparer.OrdinalIgnoreCase);
+                        foreach (var item in atrs)
+                        {
+                            Property prop = new Property(item.Value, item.Key);
+                            Properties.Add(item.Key, prop);
+                        }
 
                         // Проверка типа блока
                         var typeBlock = options.BlocksFilter.Type;
                         if (typeBlock != null)
                         {
-                            DBText atrType;
-                            if (AttrsDict.TryGetValue(typeBlock.BlockPropName, out atrType))
+                            Property propType;
+                            if (Properties.TryGetValue(typeBlock.BlockPropName, out propType))
                             {
-                                if (!typeBlock.Name.Equals(atrType.TextString, StringComparison.OrdinalIgnoreCase))
+                                if (!typeBlock.Name.Equals(propType.Value, StringComparison.OrdinalIgnoreCase))
                                 {
                                     // Свойство типа не соответствует требованию  
-                                    err += $"Свойство '{typeBlock.BlockPropName}'='{atrType.TextString}' " + 
+                                    err += $"Свойство '{typeBlock.BlockPropName}'='{propType.Value}' " + 
                                         $"не соответствует требуемому значению '{typeBlock.Name}'. ";
                                 }
-                                Type = atrType.TextString;
+                                Type = propType.Value;
                             }
                             // В блоке нет свойства Типа
                             else
@@ -179,29 +190,30 @@ namespace SpecBlocks
                         // Проверка обязательных атрибутов                              
                         foreach (var atrMustHave in options.BlocksFilter.AttrsMustHave)
                         {
-                            if (!AttrsDict.ContainsKey(atrMustHave))
+                            if (!Properties.ContainsKey(atrMustHave))
                             {
                                 err += $"Нет обязательного свойства: '{atrMustHave}'. ";
+                                continue;
                             }
                             if (!atrMustHave.Equals(options.KeyPropName, StringComparison.OrdinalIgnoreCase))
                             {
-                                MastHaveParamsWoKey.Add(atrMustHave, AttrsDict[atrMustHave].TextString);
+                                MastHaveParamsWoKey.Add(atrMustHave, Properties[atrMustHave].Value);
                             }
                         }
 
                         // определение Группы
-                        DBText groupAttr;
-                        if (AttrsDict.TryGetValue(options.GroupPropName, out groupAttr))
+                        Property groupProp;
+                        if (Properties.TryGetValue(options.GroupPropName, out groupProp))
                         {
-                            Group = groupAttr.TextString;
+                            Group = groupProp.Value;
                         }
 
                         // Ключевое свойство
-                        DBText keyAttr;
-                        if (AttrsDict.TryGetValue(options.KeyPropName, out keyAttr))
+                        Property keyProp;
+                        if (Properties.TryGetValue(options.KeyPropName, out keyProp))
                         {
-                            Key = keyAttr.TextString;
-                            AtrKey = keyAttr as AttributeReference;
+                            Key = keyProp.Value;
+                            AtrKey = keyProp.Atr;
                         }
                         else
                         {
@@ -241,10 +253,10 @@ namespace SpecBlocks
 
             return Group.Equals(other.Group) &&
                    Key.Equals(other.Key) &&
-                   AttrsDict.Count == other.AttrsDict.Count &&
-                   AttrsDict.All(i => 
-                                    other.AttrsDict.ContainsKey(i.Key) &&
-                                    AttrsDict[i.Key].TextString.Equals(other.AttrsDict[i.Key].TextString)
+                   Properties.Count == other.Properties.Count &&
+                   Properties.All(i => 
+                                    other.Properties.ContainsKey(i.Key) &&
+                                    Properties[i.Key].Value.Equals(other.Properties[i.Key].Value)
                                 );
         }
     }
