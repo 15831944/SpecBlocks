@@ -160,7 +160,11 @@ namespace SpecBlocks
                         Properties = new Dictionary<string, Property>(atrs.Count, StringComparer.OrdinalIgnoreCase);
                         foreach (var item in atrs)
                         {
-                            Property prop = new Property(item.Value, item.Key);
+                            // Префикс по имени блока и параметра
+                            string prefix = string.Empty;
+                            SpecService.Optinons.PrefixParam?.TryGetValue(BlName + item.Key, out prefix);                                                        
+                            string value = prefix + item.Value.TextString;
+                            Property prop = new Property(value, item.Key, item.Value);
                             Properties.Add(item.Key, prop);
                         }
 

@@ -11,7 +11,7 @@ namespace SpecBlocks
     /// <summary>
     /// Свойство элемента
     /// </summary>
-    internal class Property 
+    internal class Property : IEquatable<Property>
     {       
         /// <summary>
         /// Тип свойства - атрибут или дин свойство
@@ -30,12 +30,19 @@ namespace SpecBlocks
         /// </summary>
         public AttributeReference Atr { get; set; }
 
-        public Property(DBText value, string key)
+        public Property(string value, string key, DBText atr)
         {
             Type = EnumBlockProperty.Attribute;
-            Atr = value as AttributeReference;
+            Atr = atr as AttributeReference;
             Name =  key;
-            Value = value.TextString;
+            Value = value;
+        }
+
+        public bool Equals(Property other)
+        {
+            if (ReferenceEquals(this, other)) return true;
+            return Name.Equals(other.Name, StringComparison.OrdinalIgnoreCase) &&
+                    Value.Equals(other.Value, StringComparison.OrdinalIgnoreCase);
         }
     }
 }

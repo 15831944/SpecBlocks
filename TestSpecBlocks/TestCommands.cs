@@ -180,7 +180,7 @@ namespace TestSpecBlocks
 
             // Настройки нумерации
             specOpt.NumOptions = new NumberingOptions();
-            specOpt.NumOptions.PrefixByBlockName = new XmlSerializableDictionary<string, string>
+            specOpt.NumOptions.PrefixByBlockName = new XmlSerializableDictionary<string>
             {
                 { "КР_Колонна", "К-" },
                 { "КР_Пилон", "П-" },
@@ -255,7 +255,7 @@ namespace TestSpecBlocks
 
             // Настройки нумерации
             specOpt.NumOptions = new NumberingOptions();
-            specOpt.NumOptions.PrefixByBlockName = new XmlSerializableDictionary<string, string>
+            specOpt.NumOptions.PrefixByBlockName = new XmlSerializableDictionary<string>
             {
                 { "КР_Проем_Дверной-Стены", "ДП-" },
                 { "КР_Проем_Оконный_Стены", "ОП-" }
@@ -328,7 +328,7 @@ namespace TestSpecBlocks
             };
 
             // Префиксы для параметров
-            specOpt.PrefixParam = new XmlSerializableDictionary<string, string>()
+            specOpt.PrefixParam = new XmlSerializableDictionary<string>()
             {
                 // Префикс для Гильзы - Ось отв.
                 { "КР_Гильза" + "Отметка_низа", "ось отв. " }
@@ -336,7 +336,7 @@ namespace TestSpecBlocks
 
             // Настройки нумерации
             specOpt.NumOptions = new NumberingOptions();
-            specOpt.NumOptions.PrefixByBlockName = new XmlSerializableDictionary<string, string>
+            specOpt.NumOptions.PrefixByBlockName = new XmlSerializableDictionary<string>
             {
                 { "КР_Гильза", "Г" }
             };
@@ -407,7 +407,7 @@ namespace TestSpecBlocks
 
             // Настройки нумерации
             specOpt.NumOptions = new NumberingOptions();
-            specOpt.NumOptions.PrefixByBlockName = new XmlSerializableDictionary<string, string>
+            specOpt.NumOptions.PrefixByBlockName = new XmlSerializableDictionary<string>
             {
                 { "КР_Гильза в плите", "Г" }
             };

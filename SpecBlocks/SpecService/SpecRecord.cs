@@ -33,13 +33,8 @@ namespace SpecBlocks
                     var itemSpec = Items.FirstOrDefault(i => i.Properties.ContainsKey(column.ItemPropName));
                     if (itemSpec != null)
                     {
-                        // Префикс по имени блока и параметра
-                        string prefix = string.Empty;
-                        SpecService.Optinons.PrefixParam?.TryGetValue(itemSpec.BlName + column.ItemPropName, out prefix);
-
                         var prop = itemSpec.Properties[column.ItemPropName];
-                        colVal.Value = prefix + prop.Value;
-                        prop.Value = colVal.Value;  
+                        colVal.Value = prop.Value;                        
                     }
                 }
                 ColumnsValue.Add(colVal);

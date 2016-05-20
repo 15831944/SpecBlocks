@@ -57,7 +57,7 @@ namespace SpecBlocks.Options
         /// key - имя блока + имя парамтера
         /// value - префикс
         /// </summary>
-        public XmlSerializableDictionary<string, string> PrefixParam { get; set; }
+        public XmlSerializableDictionary<string> PrefixParam { get; set; }
 
         /// <summary>
         /// Загрузка настроек таблицы из файла
@@ -180,7 +180,7 @@ namespace SpecBlocks.Options
         /// key - имя блока
         /// value - префикс
         /// </summary>
-        public XmlSerializableDictionary<string, string> PrefixByBlockName { get; set; }
+        public XmlSerializableDictionary<string> PrefixByBlockName { get; set; }
         /// <summary>
         /// Доп параметр группировки для нумерации. Г1.1
         /// Одинаковые элементы дополнительно группируются по этому параметру для нумерации вида [Prefix][Group].[index]
