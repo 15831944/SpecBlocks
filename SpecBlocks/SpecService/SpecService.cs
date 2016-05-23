@@ -113,32 +113,36 @@ namespace SpecBlocks
         internal SpecOptions GetSpecOptions()
         {
             SpecOptions specOptions = null;
-            //if (File.Exists(specCustom.File))
-            //{
-            //    try
-            //    {
-            //        // Загрузка настроек таблицы из файла XML
-            //        specOptions = SpecOptions.Load(specCustom.File);
-            //    }
-            //    catch (Exception ex)
-            //    {
-            //        Logger.Log.Error(ex, $"Ошибка при попытке загрузки настроек таблицы из XML файла {specCustom.File}");
-            //    }
-            //}
+            if (File.Exists(specCustom.File))
+            {
+                try
+                {
+                    // Загрузка настроек таблицы из файла XML
+                    specOptions = SpecOptions.Load(specCustom.File);
+                }
+                catch (Exception ex)
+                {
+                    Logger.Log.Error(ex, $"Ошибка при попытке загрузки настроек таблицы из XML файла {specCustom.File}");
+                }
+            }
 
             if (specOptions == null)
             {
                 // Создать дефолтные
                 specOptions = specCustom.GetDefaultOptions();
                 // Сохранение дефолтных настроек 
-                //try
-                //{
-                //    specOptions.Save(specCustom.File);
-                //}
-                //catch (Exception exSave)
-                //{
-                //    Logger.Log.Error(exSave, $"Попытка сохранение настроек в файл {specCustom.File}");
-                //}
+                var cadMan = AutoCAD_PIK_Manager.Settings.PikSettings.PikFileSettings?.LoginCADManager;
+                if (string.IsNullOrEmpty(cadMan) || Environment.UserName.Equals(cadMan, StringComparison.OrdinalIgnoreCase))
+                {
+                    try
+                    {
+                        specOptions.Save(specCustom.File);
+                    }
+                    catch (Exception exSave)
+                    {
+                        Logger.Log.Error(exSave, $"Попытка сохранение настроек в файл {specCustom.File}");
+                    }
+                }
             }
             return specOptions;
         }
