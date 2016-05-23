@@ -176,6 +176,11 @@ namespace SpecBlocks.Options
     public class NumberingOptions
     {
         /// <summary>
+        /// Параметры блоков для группировки - одной марки
+        /// </summary>
+        public List<string> GroupProperties { get; set; }
+
+        /// <summary>
         /// Префикс перед номером - по имени блоки
         /// key - имя блока
         /// value - префикс

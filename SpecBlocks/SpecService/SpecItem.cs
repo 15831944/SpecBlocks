@@ -16,7 +16,7 @@ namespace SpecBlocks
     internal class SpecItem : IEquatable<SpecItem>
     {
         public Dictionary<string, Property> Properties { get; private set; }
-        public Dictionary<string, string> MastHaveParamsWoKey { get; private set; }
+        public Dictionary<string, string> NumGroupProperties { get; private set; } = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         public string BlName { get; private set; }
         // Название группы для элемента
         public string Group { get; private set; } = "";
@@ -166,6 +166,12 @@ namespace SpecBlocks
                             string value = prefix + item.Value.TextString;
                             Property prop = new Property(value, item.Key, item.Value);
                             Properties.Add(item.Key, prop);
+
+                            if (SpecService.Optinons.NumOptions.GroupProperties != null &&
+                                SpecService.Optinons.NumOptions.GroupProperties.Contains(item.Key, StringComparer.OrdinalIgnoreCase))
+                            {
+                                NumGroupProperties.Add(item.Key, value);
+                            }
                         }
 
                         // Проверка типа блока
@@ -189,8 +195,7 @@ namespace SpecBlocks
                                 err += $"Нет обязательного свойства {typeBlock.BlockPropName}. ";
                             }
                         }
-
-                        MastHaveParamsWoKey = new Dictionary<string, string>();
+                        
                         // Проверка обязательных атрибутов                              
                         foreach (var atrMustHave in options.BlocksFilter.AttrsMustHave)
                         {
@@ -198,11 +203,7 @@ namespace SpecBlocks
                             {
                                 err += $"Нет обязательного свойства: '{atrMustHave}'. ";
                                 continue;
-                            }
-                            if (!atrMustHave.Equals(options.KeyPropName, StringComparison.OrdinalIgnoreCase))
-                            {
-                                MastHaveParamsWoKey.Add(atrMustHave, Properties[atrMustHave].Value);
-                            }
+                            }                            
                         }
 
                         // определение Группы

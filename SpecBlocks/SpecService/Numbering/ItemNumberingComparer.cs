@@ -21,11 +21,11 @@ namespace SpecBlocks.Numbering
                 return res;
             }
 
-            // Сравнение объектов по параметрам MastHaveParamsWoKey
-            foreach (var iX in x.MastHaveParamsWoKey)
-            {
-                var iYValue = y.MastHaveParamsWoKey[iX.Key];
-                res = alphaComparer.Compare(iX.Value, iYValue);
+            // Сравнение объектов по параметрам группировки
+            foreach (var xProp in x.NumGroupProperties)
+            {                
+                var yProp = y.Properties[xProp.Key];
+                res = alphaComparer.Compare(xProp.Value, yProp.Value);
                 if(res != 0)
                 {
                     return res;                    
@@ -39,7 +39,7 @@ namespace SpecBlocks.Numbering
             var res = string.Equals(x.NumPrefix, y.NumPrefix);
             if (res)
             {
-                res = x.MastHaveParamsWoKey.SequenceEqual(y.MastHaveParamsWoKey);
+                res = x.NumGroupProperties.SequenceEqual(y.NumGroupProperties);
             }
             return res;
         }

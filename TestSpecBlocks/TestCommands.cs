@@ -180,6 +180,10 @@ namespace TestSpecBlocks
 
             // Настройки нумерации
             specOpt.NumOptions = new NumberingOptions();
+            specOpt.NumOptions.GroupProperties = new List<string>()
+            {
+                "НАИМЕНОВАНИЕ"
+            };
             specOpt.NumOptions.PrefixByBlockName = new XmlSerializableDictionary<string>
             {
                 { "КР_Колонна", "К-" },
@@ -221,7 +225,7 @@ namespace TestSpecBlocks
             // Обязательные атрибуты
             specOpt.BlocksFilter.AttrsMustHave = new List<string>()
             {
-                "ТИП", "МАРКА", "РАЗМЕР"
+                "ТИП", "МАРКА", "РАЗМЕР", "ОТМЕТКА_НИЗА", "НАЗНАЧЕНИЕ"
             };
             // Тип блока - атрибут ТИП = Монолит
             specOpt.BlocksFilter.Type = new ItemProp() { BlockPropName = "ТИП", Name = "Проем", BlockPropType = EnumBlockProperty.Attribute };
@@ -251,10 +255,14 @@ namespace TestSpecBlocks
                 new TableColumn () { Name = "Назначение", Aligment = CellAlignment.MiddleCenter, ItemPropName = "Назначение", Width = 20 },
                 new TableColumn () { Name = "Кол-во, шт.", Aligment = CellAlignment.MiddleCenter, ItemPropName = "Count", Width = 15 },
                 new TableColumn () { Name = "Примечание", Aligment = CellAlignment.MiddleLeft, ItemPropName = "Примечание", Width = 30 },
-            };            
+            };
 
             // Настройки нумерации
             specOpt.NumOptions = new NumberingOptions();
+            specOpt.NumOptions.GroupProperties = new List<string>()
+            {
+                "РАЗМЕР", "НАЗНАЧЕНИЕ"
+            };
             specOpt.NumOptions.PrefixByBlockName = new XmlSerializableDictionary<string>
             {
                 { "КР_Проем_Дверной-Стены", "ДП-" },
@@ -295,7 +303,7 @@ namespace TestSpecBlocks
             // Обязательные атрибуты
             specOpt.BlocksFilter.AttrsMustHave = new List<string>()
             {
-                "ТИП", "МАРКА", "РАЗМЕР"
+                "ТИП", "МАРКА", "НАЗНАЧЕНИЕ",  "РАЗМЕР", "ОТМЕТКА"
             };
             // Тип блока - атрибут ТИП = Монолит
             specOpt.BlocksFilter.Type = new ItemProp() { BlockPropName = "ТИП", Name = "Отверстие", BlockPropType = EnumBlockProperty.Attribute };
@@ -308,7 +316,7 @@ namespace TestSpecBlocks
             {
                 new ItemProp () { Name = "Марка", BlockPropName = "МАРКА", BlockPropType = EnumBlockProperty.Attribute },
                 new ItemProp () { Name = "Размер", BlockPropName = "РАЗМЕР", BlockPropType = EnumBlockProperty.Attribute },
-                new ItemProp () { Name = "Отметка_низа", BlockPropName = "ОТМЕТКА_НИЗА", BlockPropType = EnumBlockProperty.Attribute },
+                new ItemProp () { Name = "Отметка", BlockPropName = "ОТМЕТКА", BlockPropType = EnumBlockProperty.Attribute },
                 new ItemProp () { Name = "Назначение", BlockPropName = "НАЗНАЧЕНИЕ", BlockPropType = EnumBlockProperty.Attribute },
                 new ItemProp () { Name = "Примечание", BlockPropName = "ПРИМЕЧАНИЕ", BlockPropType = EnumBlockProperty.Attribute },
             };
@@ -321,26 +329,30 @@ namespace TestSpecBlocks
             {
                 new TableColumn () { Name = "Марка отв.", Aligment = CellAlignment.MiddleCenter, ItemPropName = "Марка", Width = 10 },
                 new TableColumn () { Name = "Размеры, мм", Aligment = CellAlignment.MiddleCenter, ItemPropName = "Размер", Width = 20 },
-                new TableColumn () { Name = "Отм. низа проема, м", Aligment = CellAlignment.MiddleCenter, ItemPropName = "Отметка_низа", Width = 20 },
+                new TableColumn () { Name = "Отм. низа проема, м", Aligment = CellAlignment.MiddleCenter, ItemPropName = "Отметка", Width = 20 },
                 new TableColumn () { Name = "Назначение", Aligment = CellAlignment.MiddleCenter, ItemPropName = "Назначение", Width = 20 },
                 new TableColumn () { Name = "Кол-во, шт.", Aligment = CellAlignment.MiddleCenter, ItemPropName = "Count", Width = 15 },
                 new TableColumn () { Name = "Примечание", Aligment = CellAlignment.MiddleLeft, ItemPropName = "Примечание", Width = 30 },
             };
 
             // Префиксы для параметров
-            specOpt.PrefixParam = new XmlSerializableDictionary<string>()
+            specOpt.PrefixParam = new XmlSerializableDictionary<string>
             {
                 // Префикс для Гильзы - Ось отв.
-                { "КР_Гильза" + "Отметка_низа", "ось отв. " }
+                { "КР_Гильза" + "Отметка", "ось отв. " }
             };
 
             // Настройки нумерации
             specOpt.NumOptions = new NumberingOptions();
+            specOpt.NumOptions.GroupProperties = new List<string>()
+            {
+                "НАЗНАЧЕНИЕ",  "РАЗМЕР"
+            };
             specOpt.NumOptions.PrefixByBlockName = new XmlSerializableDictionary<string>
             {
                 { "КР_Гильза", "Г" }
             };
-            specOpt.NumOptions.ExGroupNumbering = "ОТМЕТКА_НИЗА";
+            specOpt.NumOptions.ExGroupNumbering = "ОТМЕТКА";
 
             return specOpt;
         }
@@ -375,7 +387,7 @@ namespace TestSpecBlocks
             // Обязательные атрибуты
             specOpt.BlocksFilter.AttrsMustHave = new List<string>()
             {
-                "ТИП", "МАРКА", "НАЗНАЧЕНИЕ", "РАЗМЕР"
+                "ТИП", "МАРКА", "РАЗМЕР", "НАЗНАЧЕНИЕ"
             };
             // Тип блока - атрибут ТИП = Отверстие в плите
             specOpt.BlocksFilter.Type = new ItemProp() { BlockPropName = "ТИП", Name = "Отверстие в плите", BlockPropType = EnumBlockProperty.Attribute };
@@ -407,10 +419,15 @@ namespace TestSpecBlocks
 
             // Настройки нумерации
             specOpt.NumOptions = new NumberingOptions();
+            specOpt.NumOptions.GroupProperties = new List<string>()
+            {
+                "РАЗМЕР"
+            };
             specOpt.NumOptions.PrefixByBlockName = new XmlSerializableDictionary<string>
             {
                 { "КР_Гильза в плите", "Г" }
             };
+            specOpt.NumOptions.ExGroupNumbering = "НАЗНАЧЕНИЕ";
 
             return specOpt;
         }
